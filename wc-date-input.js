@@ -6,6 +6,8 @@ class WCDateInput extends HTMLElement {
   #monthText = 'Month'
   #yearText = 'Year'
 
+  static formAssocaited = true
+
 
   static get observedAttributes() {
     return [
