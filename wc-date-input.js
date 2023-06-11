@@ -42,9 +42,9 @@ class WCDateInput extends HTMLElement {
     this.dayInput = this.shadow.querySelector('#day')
     this.monthInput = this.shadow.querySelector('#month')
     this.yearInput = this.shadow.querySelector('#year')
-    this.dayInput.addEventListener('change', () => this.updateValue('day'))
-    this.monthInput.addEventListener('change', () => this.updateValue('month'))
-    this.yearInput.addEventListener('change', () => this.updateValue('year'))
+    this.dayInput.addEventListener('change', () => this.updateValue())
+    this.monthInput.addEventListener('change', () => this.updateValue())
+    this.yearInput.addEventListener('change', () => this.updateValue())
   }
 
   get css() {
@@ -288,7 +288,7 @@ class WCDateInput extends HTMLElement {
     }
   }
 
-  checkValidity(chunk) {
+  checkValidity() {
     if(this.checkMonth()) {
       this.monthInput.classList.remove('error')
     } else {
