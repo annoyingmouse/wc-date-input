@@ -1,7 +1,7 @@
 class WCDateInput extends HTMLElement {
-  #day = ''
-  #month = ''
-  #year = ''
+  #day = 0
+  #month = 0
+  #year = 0
   #dayText = 'Day'
   #monthText = 'Month'
   #yearText = 'Year'
@@ -39,12 +39,12 @@ class WCDateInput extends HTMLElement {
 
   connectedCallback() {
     this.render()
-    this.#day = this.shadow.querySelector('#day')
-    this.#month = this.shadow.querySelector('#month')
-    this.#year = this.shadow.querySelector('#year')
-    this.#day.addEventListener('change', () => this.updateValue('day'))
-    this.#month.addEventListener('change', () => this.updateValue('month'))
-    this.#year.addEventListener('change', () => this.updateValue('year'))
+    this.dayInput = this.shadow.querySelector('#day')
+    this.monthInput = this.shadow.querySelector('#month')
+    this.yearInput = this.shadow.querySelector('#year')
+    this.dayInput.addEventListener('change', () => this.updateValue('day'))
+    this.monthInput.addEventListener('change', () => this.updateValue('month'))
+    this.yearInput.addEventListener('change', () => this.updateValue('year'))
   }
 
   get css() {
@@ -111,7 +111,7 @@ class WCDateInput extends HTMLElement {
                  type="text"
                  min="1"
                  max="31"
-                 value="${this.#day}"
+                 value="${this.#day ? this.#day : ''}"
                  pattern="[0-9]{1,2}"
                  inputmode="numeric"
                  data-form-type="date,day" />
@@ -125,7 +125,7 @@ class WCDateInput extends HTMLElement {
                  type="text"
                  min="1"
                  max="12"
-                 value="${this.#month}"
+                 value="${this.#month ? this.#month : ''}"
                  pattern="[0-9]{1,2}"
                  inputmode="numeric"
                  data-form-type="date,month" />
@@ -137,7 +137,7 @@ class WCDateInput extends HTMLElement {
           <input id="year"
                  name="year"
                  type="text"
-                 value="${this.#year}"
+                 value="${this.#year ? this.#year : ''}"
                  pattern="[0-9]{4}"
                  inputmode="numeric" 
                  data-form-type="date,year" />
@@ -156,26 +156,193 @@ class WCDateInput extends HTMLElement {
     }
   }
 
+  isLeapYear() {
+    if(!this.#year) return false
+    return (this.#year % 4 === 0 && this.#year % 100 !== 0 || this.#year % 400 === 0)
+  }
+
+  checkDay() {
+    if(!this.#day) return true
+    if(this.#month) {
+      if(this.#month === 2) {
+        if(this.#year) {
+          if(this.#day > 29 && this.isLeapYear()) {
+            return false
+          } else if(this.#day > 28 && !this.isLeapYear()) {
+            return false
+          } else {
+            return true
+          }
+        } else {
+          if(this.#day > 29) {
+            return false
+          } else {
+            return true
+          }
+        }
+      } else if(this.#month === 4 || this.#month === 6 || this.#month === 9 || this.#month === 11) {
+        if(this.#day > 30) {
+          return false
+        } else {
+          return true
+        }
+      } else {
+        if(this.#day > 31) {
+          return false
+        } else {
+          return true
+        }
+      }
+    } else {
+      if(this.#day > 31) {
+        return false
+      } else {
+        return true
+      }
+    }
+  }
+
+  checkMonth() {
+    if(!this.#month) return true
+    if(this.#month > 12) {
+      return false
+    } else {
+      if(this.#day) {
+        if(this.#month === 2) {
+          if(this.#year) {
+            if(this.#day > 29 && this.isLeapYear()) {
+              return false
+            } else if(this.#day > 28 && !this.isLeapYear()) {
+              return false
+            } else {
+              return true
+            }
+          } else {
+            if(this.#day > 29) {
+              return false
+            } else {
+              return true
+            }
+          }
+        } else if(this.#month === 4 || this.#month === 6 || this.#month === 9 || this.#month === 11) {
+          if(this.#day > 30) {
+            return false
+          } else {
+            return true
+          }
+        } else {
+          if(this.#day > 31) {
+            return false
+          } else {
+            return true
+          }
+        }
+      } else {
+        return true
+      }
+    }
+  }
+
+  checkYear() {
+    if(!this.#year) return true
+    if(this.#year > 9999) {
+      return false
+    } else {
+      if(this.#month) {
+        if(this.#month === 2) {
+          if(this.#day) {
+            if(this.#day > 29 && this.isLeapYear()) {
+              return false
+            } else if(this.#day > 28 && !this.isLeapYear()) {
+              return false
+            } else {
+              return true
+            }
+          } else {
+            return true
+          }
+        } else if(this.#month === 4 || this.#month === 6 || this.#month === 9 || this.#month === 11) {
+          if(this.#day) {
+            if(this.#day > 30) {
+              return false
+            } else {
+              return true
+            }
+          } else {
+            return true
+          }
+        } else {
+          if(this.#day) {
+            if(this.#day > 31) {
+              return false
+            } else {
+              return true
+            }
+          } else {
+            return true
+          }
+        }
+      } else {
+        return true
+      }
+    }
+  }
+
   checkValidity(chunk) {
-    console.log('checkValidity called', chunk)
+    if(this.checkMonth()) {
+      this.monthInput.classList.remove('error')
+    } else {
+      this.monthInput.classList.add('error')
+    }
+    if(this.checkDay()) {
+      this.dayInput.classList.remove('error')
+    } else {
+      this.dayInput.classList.add('error')
+    }
+    if(this.checkYear()) {
+      this.yearInput.classList.remove('error')
+    } else {
+      this.yearInput.classList.add('error')
+    }
   }
 
   updateValue(chunk) {
-    console.log('updateValue called', chunk)
+    /**
+     * For each element of the date, we check if the value is a number and that it is not zero
+     * If it is, we update the internal variable and the value of the corresponding input (removing the leading 0)
+     * If it is not, we set the internal variable to 0 and update the corresponding input (showing an empty string)
+     * We then check the validity of the date
+     */
     if (chunk === 'day') {
-      this.#day = this.#day.value
+      if(!isNaN(Number(this.dayInput.value)) && Number(this.dayInput.value)) {
+        this.#day = Number(this.dayInput.value)
+        this.dayInput.value = `${this.#day}`
+      } else {
+        this.#day = 0
+        this.dayInput.value = ''
+      }
       this.checkValidity(chunk)
     }
     if (chunk === 'month') {
-      this.#month = this.#month.value
+      if(!isNaN(Number(this.monthInput.value)) && Number(this.monthInput.value)) {
+        this.#month = Number(this.monthInput.value)
+        this.monthInput.value = `${this.#month}`
+      } else {
+        this.#month = 0
+        this.monthInput.value = ''
+      }
       this.checkValidity(chunk)
     }
     if (chunk === 'year') {
-      this.#year = this.#year.value
+      if(!isNaN(Number(this.yearInput.value)) && Number(this.yearInput.value)) {
+        this.#year = Number(this.yearInput.value)
+        this.yearInput.value = `${this.#year}`
+      } else {
+        this.#year = 0
+        this.yearInput.value = ''
+      }
       this.checkValidity(chunk)
     }
-    // const date = new Date(this.#year.value, this.#month.value - 1, this.#day.value)
-    // this.value = date.toISOString().split('T')[0]
   }
 
   /**
