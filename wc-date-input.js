@@ -8,8 +8,6 @@ class WCDateInput extends HTMLElement {
 
   static formAssociated = true
 
-
-
   static get observedAttributes() {
     return [
       'value',
@@ -33,7 +31,9 @@ class WCDateInput extends HTMLElement {
 
   constructor() {
     super()
-    this.shadow = this.attachShadow({ mode: 'closed' })
+    this.shadow = this.attachShadow({
+      mode: 'closed'
+    })
     this.internals = this.attachInternals()
   }
 
@@ -42,9 +42,15 @@ class WCDateInput extends HTMLElement {
     this.dayInput = this.shadow.querySelector('#day')
     this.monthInput = this.shadow.querySelector('#month')
     this.yearInput = this.shadow.querySelector('#year')
-    this.dayInput.addEventListener('change', () => this.updateValue())
-    this.monthInput.addEventListener('change', () => this.updateValue())
-    this.yearInput.addEventListener('change', () => this.updateValue())
+    this.dayInput.addEventListener('change', () => this.updateValue('day'))
+    this.monthInput.addEventListener('change', () => this.updateValue('month'))
+    this.yearInput.addEventListener('change', () => this.updateValue('year'))
+    if(this.value) {
+      this.dayInput.value = `${this.value.getDate()}`
+      this.monthInput.value = `${this.value.getMonth() + 1}`
+      this.yearInput.value = `${this.value.getFullYear()}`
+      this.checkValue()
+    }
   }
 
   get css() {
@@ -163,6 +169,7 @@ class WCDateInput extends HTMLElement {
 
   checkDay() {
     if(!this.#day) return true
+    if(this.#day < 1) return false
     if(this.#month) {
       if(this.#month === 2) {
         if(this.#year) {
@@ -204,91 +211,89 @@ class WCDateInput extends HTMLElement {
 
   checkMonth() {
     if(!this.#month) return true
-    if(this.#month > 12) {
+    if(this.#month > 12 || this.#month < 1) {
       return false
-    } else {
-      if(this.#day) {
-        if(this.#month === 2) {
-          if(this.#year) {
-            if(this.#day > 29 && this.isLeapYear()) {
-              return false
-            } else if(this.#day > 28 && !this.isLeapYear()) {
-              return false
-            } else {
-              return true
-            }
+    }
+    if(this.#day) {
+      if(this.#month === 2) {
+        if(this.#year) {
+          if(this.#day > 29 && this.isLeapYear()) {
+            return false
+          } else if(this.#day > 28 && !this.isLeapYear()) {
+            return false
           } else {
-            if(this.#day > 29) {
-              return false
-            } else {
-              return true
-            }
+            return true
           }
-        } else if(this.#month === 4 || this.#month === 6 || this.#month === 9 || this.#month === 11) {
+        } else {
+          if(this.#day > 29) {
+            return false
+          } else {
+            return true
+          }
+        }
+      } else if(this.#month === 4 || this.#month === 6 || this.#month === 9 || this.#month === 11) {
+        if(this.#day > 30) {
+          return false
+        } else {
+          return true
+        }
+      } else {
+        if(this.#day > 31) {
+          return false
+        } else {
+          return true
+        }
+      }
+    } else {
+      return true
+    }
+  }
+
+  checkYear() {
+    if(!this.#year) return true
+    if(this.#year > 3000 || this.#year < 1000) {
+      return false
+    }
+    if(this.#month) {
+      if(this.#month === 2) {
+        if(this.#day) {
+          if(this.#day > 29 && this.isLeapYear()) {
+            return false
+          } else if(this.#day > 28 && !this.isLeapYear()) {
+            return false
+          } else {
+            return true
+          }
+        } else {
+          return true
+        }
+      } else if(this.#month === 4 || this.#month === 6 || this.#month === 9 || this.#month === 11) {
+        if(this.#day) {
           if(this.#day > 30) {
             return false
           } else {
             return true
           }
         } else {
+          return true
+        }
+      } else {
+        if(this.#day) {
           if(this.#day > 31) {
             return false
           } else {
             return true
           }
-        }
-      } else {
-        return true
-      }
-    }
-  }
-
-  checkYear() {
-    if(!this.#year) return true
-    if(this.#year > 9999) {
-      return false
-    } else {
-      if(this.#month) {
-        if(this.#month === 2) {
-          if(this.#day) {
-            if(this.#day > 29 && this.isLeapYear()) {
-              return false
-            } else if(this.#day > 28 && !this.isLeapYear()) {
-              return false
-            } else {
-              return true
-            }
-          } else {
-            return true
-          }
-        } else if(this.#month === 4 || this.#month === 6 || this.#month === 9 || this.#month === 11) {
-          if(this.#day) {
-            if(this.#day > 30) {
-              return false
-            } else {
-              return true
-            }
-          } else {
-            return true
-          }
         } else {
-          if(this.#day) {
-            if(this.#day > 31) {
-              return false
-            } else {
-              return true
-            }
-          } else {
-            return true
-          }
+          return true
         }
-      } else {
-        return true
       }
+    } else {
+      return true
     }
   }
 
-  checkValidity() {
+  checkValue() {
     if(this.checkMonth()) {
       this.monthInput.classList.remove('error')
     } else {
@@ -304,6 +309,14 @@ class WCDateInput extends HTMLElement {
     } else {
       this.yearInput.classList.add('error')
     }
+  }
+  
+  checkValidity() {
+    return this.internals.checkValidity()
+  }
+
+  reportValidity() {
+    return this.internals.reportValidity()
   }
 
   updateValue(chunk) {
@@ -321,7 +334,7 @@ class WCDateInput extends HTMLElement {
         this.#day = 0
         this.dayInput.value = ''
       }
-      this.checkValidity(chunk)
+      this.checkValue()
     }
     if (chunk === 'month') {
       if(!isNaN(Number(this.monthInput.value)) && Number(this.monthInput.value)) {
@@ -331,7 +344,7 @@ class WCDateInput extends HTMLElement {
         this.#month = 0
         this.monthInput.value = ''
       }
-      this.checkValidity(chunk)
+      this.checkValue()
     }
     if (chunk === 'year') {
       if(!isNaN(Number(this.yearInput.value)) && Number(this.yearInput.value)) {
@@ -341,7 +354,7 @@ class WCDateInput extends HTMLElement {
         this.#year = 0
         this.yearInput.value = ''
       }
-      this.checkValidity(chunk)
+      this.checkValue()
     }
   }
 
@@ -351,7 +364,17 @@ class WCDateInput extends HTMLElement {
    * @returns {Date}
    */
   get value() {
-    return this.hasAttribute('value') ? new Date(this.getAttribute('value')) : new Date()
+    const pattern = new RegExp("^\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])$")
+    if(this.hasAttribute('value') && pattern.test(this.getAttribute('value'))){
+      const dateChunks = this.getAttribute('value').split('-')
+      this.#year = Number(dateChunks[0])
+      this.#month = Number(dateChunks[1])
+      this.#day = Number(dateChunks[2])
+      return new Date(this.getAttribute('value'))
+    } else {
+      null
+    }
+
   }
 
   set value(value) {
@@ -387,6 +410,14 @@ class WCDateInput extends HTMLElement {
 
   get yearText() {
     return this.hasAttribute('yearText') ? this.getAttribute('yearText') : this.#yearText
+  }
+
+  get validity() {
+    return this.internals.validity
+  }
+
+  get validationMessage() {
+    return this.internals.validationMessage
   }
 
 }

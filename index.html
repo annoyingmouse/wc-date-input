@@ -40,8 +40,26 @@
 <!--<p>While not at the start or end of the pagination there are buttons to allow a jump of 3 pages.</p>-->
     <h2>Examples</h2>
     <h3>Plain input</h3>
-    <wc-date-input />
+    <form id="example_001">
+      <wc-date-input name="example_001_field"
+                     value="2017-02-30"/>
+      <input type="submit"
+             value="Submit"/>
+    </form>
 
     <script type="module" src="wc-date-input.js"></script>
+    <script>
+      (() => {
+        const example_001 = document.getElementById('example_001')
+        example_001.addEventListener('submit', (e) => {
+          e.preventDefault()
+          const formData = new FormData(e.target)
+          const data = Object.fromEntries(formData.entries())
+          console.log(data)
+        })
+      })
+
+    </script>
+
   </body>
 </html>
