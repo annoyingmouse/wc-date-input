@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>&lt;wc-date-input&gt;</title>
+  <title>&lt;wc-date-input/&gt;</title>
   <link rel="stylesheet" href="./style/sakura.css" type="text/css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +18,7 @@
   </style>
 </head>
 <body>
-<h1>&lt;wc-date-input&gt;</h1>
+<h1>&lt;wc-date-input/&gt;</h1>
 <!--<p style="margin-bottom: 0;">-->
 <!--  <a href="https://www.webcomponents.org/element/@annoyingmouse/wc-pagination"-->
 <!--     rel="nofollow">-->
@@ -40,24 +40,29 @@
 <!--<p>While not at the start or end of the pagination there are buttons to allow a jump of 3 pages.</p>-->
     <h2>Examples</h2>
     <h3>Plain input</h3>
-    <form id="example_001">
+    <form id="example_001" style="display: flex; flex-direction: column;">
       <wc-date-input name="example_001_field"
-                     value="2017-02-30"/>
-      <input type="submit"
-             value="Submit"/>
+                     min="2019-01-01"
+                     max="2020-12-31" 
+                     day-text="Jour"
+                     month-text="Mois"
+                     year-text="Année"
+                     value="2020-02-30"></wc-date-input>
+      <input type="text" name="example_002_field" required />
+      <button type="submit">Submit</button>
     </form>
 
     <script type="module" src="wc-date-input.js"></script>
     <script>
       (() => {
         const example_001 = document.getElementById('example_001')
-        example_001.addEventListener('submit', (e) => {
+        example_001.addEventListener('submit', e => {
           e.preventDefault()
           const formData = new FormData(e.target)
           const data = Object.fromEntries(formData.entries())
           console.log(data)
         })
-      })
+      })()
 
     </script>
 
