@@ -5,12 +5,12 @@ class WCDateInput extends HTMLElement {
   #dayText = 'Day'
   #monthText = 'Month'
   #yearText = 'Year'
+  #attributes = {}
 
   static formAssociated = true
 
   static get observedAttributes() {
     return [
-      'required',
       'value',
       'min',
       'max',
@@ -32,32 +32,43 @@ class WCDateInput extends HTMLElement {
 
   constructor() {
     super()
+    this.internals = this.attachInternals()
     this.shadow = this.attachShadow({
       mode: 'closed'
     })
-    this.internals = this.attachInternals()
+    this.shadow.innerHTML = `${this.css}${this.html}`
   }
 
   connectedCallback() {
-    console.log('connectedCallback')
-    this.render()
     this.dayInput = this.shadow.querySelector('#day')
     this.monthInput = this.shadow.querySelector('#month')
     this.yearInput = this.shadow.querySelector('#year')
-    this.dayInput.addEventListener('keyup', () => this.updateValue('day'))
-    this.monthInput.addEventListener('keyup', () => this.updateValue('month'))
-    this.yearInput.addEventListener('keyup', () => this.updateValue('year'))
+    this.dayInput.addEventListener('blur', () => {
+      this.updateDayValue()
+    })
+    this.monthInput.addEventListener('blur', () => {
+      this.updateMonthValue()
+    })
+    this.yearInput.addEventListener('blur', () => {
+      this.updateYearValue()
+    })
+    for (let prop in this.#attributes) {
+      this.dayInput.setAttribute(prop, this.#attributes[prop]);
+      this.monthInput.setAttribute(prop, this.#attributes[prop]);
+      this.yearInput.setAttribute(prop, this.#attributes[prop]);
+    }
     const value = this.value // get value from attribute, even if it's incorrect or not set
     this.dayInput.value = `${this.#day ? this.#day : ''}`
     this.monthInput.value = `${this.#month ? this.#month : ''}`
     this.yearInput.value = `${this.#year ? this.#year : ''}`
-    const event = new Event('keyup', {
-      bubbles: true,
-      composed: true
-    })
-    this.dayInput.dispatchEvent(event)
-    this.monthInput.dispatchEvent(event)
-    this.yearInput.dispatchEvent(event)
+    this.updateDayValue()
+    this.updateMonthValue()
+    this.updateYearValue()
+    
+    this.addEventListener('blur', () => this.dayInput.focus())
+    if (!this.hasAttribute('tabindex')) {
+      this.setAttribute('tabindex', '0');
+    }
   }
 
   get css() {
@@ -159,16 +170,18 @@ class WCDateInput extends HTMLElement {
     `
   }
 
-  render() {
-    this.shadow.innerHTML = `${this.css}${this.html}`
-  }
-
   attributeChangedCallback(name, oldValue, newValue) {
-    console.log('attributeChangedCallback', name, oldValue, newValue)
     switch (name) {
       case 'required':
         if(oldValue !== newValue) {
+          this.#attributes[name] = newValue !== null
           this.required = newValue !== null
+        }
+        break
+      case 'disabled':
+        if(oldValue !== newValue) {
+          this.#attributes[name] = newValue !== null
+          this.disabled = newValue !== null
         }
         break
       case 'disabled':
@@ -209,135 +222,9 @@ class WCDateInput extends HTMLElement {
     }
   }
 
-  isLeapYear() {
-    if(!this.#year) return false
-    return (this.#year % 4 === 0 && this.#year % 100 !== 0 || this.#year % 400 === 0)
-  }
-
-  checkDay() {
-    if(!this.#day) return true
-    if(this.#day < 1) return false
-    if(this.#month) {
-      if(this.#month === 2) {
-        if(this.#year) {
-          if(this.#day > 29 && this.isLeapYear()) {
-            return false
-          } else if(this.#day > 28 && !this.isLeapYear()) {
-            return false
-          } else {
-            return true
-          }
-        } else {
-          if(this.#day > 29) {
-            return false
-          } else {
-            return true
-          }
-        }
-      } else if(this.#month === 4 || this.#month === 6 || this.#month === 9 || this.#month === 11) {
-        if(this.#day > 30) {
-          return false
-        } else {
-          return true
-        }
-      } else {
-        if(this.#day > 31) {
-          return false
-        } else {
-          return true
-        }
-      }
-    } else {
-      if(this.#day > 31) {
-        return false
-      } else {
-        return true
-      }
-    }
-  }
-
-  checkMonth() {
-    if(!this.#month) return true
-    if(this.#month > 12 || this.#month < 1) {
-      return false
-    }
-    if(this.#day) {
-      if(this.#month === 2) {
-        if(this.#year) {
-          if(this.#day > 29 && this.isLeapYear()) {
-            return false
-          } else if(this.#day > 28 && !this.isLeapYear()) {
-            return false
-          } else {
-            return true
-          }
-        } else {
-          if(this.#day > 29) {
-            return false
-          } else {
-            return true
-          }
-        }
-      } else if(this.#month === 4 || this.#month === 6 || this.#month === 9 || this.#month === 11) {
-        if(this.#day > 30) {
-          return false
-        } else {
-          return true
-        }
-      } else {
-        if(this.#day > 31) {
-          return false
-        } else {
-          return true
-        }
-      }
-    } else {
-      return true
-    }
-  }
-
-  checkYear() {
-    if(!this.#year) return true
-    if(this.#year > 3000 || this.#year < 1000) {
-      return false
-    }
-    if(this.#month) {
-      if(this.#month === 2) {
-        if(this.#day) {
-          if(this.#day > 29 && this.isLeapYear()) {
-            return false
-          } else if(this.#day > 28 && !this.isLeapYear()) {
-            return false
-          } else {
-            return true
-          }
-        } else {
-          return true
-        }
-      } else if(this.#month === 4 || this.#month === 6 || this.#month === 9 || this.#month === 11) {
-        if(this.#day) {
-          if(this.#day > 30) {
-            return false
-          } else {
-            return true
-          }
-        } else {
-          return true
-        }
-      } else {
-        if(this.#day) {
-          if(this.#day > 31) {
-            return false
-          } else {
-            return true
-          }
-        } else {
-          return true
-        }
-      }
-    } else {
-      return true
-    }
+  isLeapYear(year) {
+    if(!year) return false
+    return (year % 4 === 0 && year % 100 !== 0 || year % 400 === 0)
   }
 
   checkValue() {
@@ -392,43 +279,155 @@ class WCDateInput extends HTMLElement {
     return this.internals.reportValidity()
   }
 
-  updateValue(chunk) {
+  updateDay(value) {
+    if(!value) {
+      this.#day = 0
+      this.dayInput.value = ''
+    } else {
+      this.#day = value
+      this.dayInput.value = `${value}`
+    }
+  }
 
-    /**
-     * For each element of the date, we check if the value is a number and that it is not zero
-     * If it is, we update the internal variable and the value of the corresponding input (removing the leading 0)
-     * If it is not, we set the internal variable to 0 and update the corresponding input (showing an empty string)
-     * We then check the validity of the date
-     */
-    if (chunk === 'day') {
-      if(!isNaN(Number(this.dayInput.value)) && Number(this.dayInput.value)) {
-        this.#day = Number(this.dayInput.value)
-        this.dayInput.value = `${this.#day}`
-      } else {
-        this.#day = 0
-        this.dayInput.value = ''
-      }
-      this.checkValue(chunk)
+  updateMonth(value) {
+    if(!value) {
+      this.#month = 0
+      this.monthInput.value = ''
+    } else {
+      this.#month = value
+      this.monthInput.value = `${value}`
     }
-    if (chunk === 'month') {
-      if(!isNaN(Number(this.monthInput.value)) && Number(this.monthInput.value)) {
-        this.#month = Number(this.monthInput.value)
-        this.monthInput.value = `${this.#month}`
-      } else {
-        this.#month = 0
-        this.monthInput.value = ''
-      }
-      this.checkValue(chunk)
+  }
+
+  updateYear(value) {
+    if(!value) {
+      this.#year = 0
+      this.yearInput.value = ''
+    } else {
+      this.#year = value
+      this.yearInput.value = `${value}`
     }
-    if (chunk === 'year') {
-      if(!isNaN(Number(this.yearInput.value)) && Number(this.yearInput.value)) {
-        this.#year = Number(this.yearInput.value)
-        this.yearInput.value = `${this.#year}`
+  }
+
+  checkDay(value) {
+    if(value > 31 || value < 1) {
+      return false
+    }
+    if(this.#month > 0) {
+      if(this.#month === 2) {
+        if(this.#year) {
+          if(value > 29 && this.isLeapYear(this.#year)) {
+            return false
+          } else if(value > 28 && !this.isLeapYear(this.#year)) {
+            return false
+          } else {
+            return true
+          }
+        } else {
+          if(value > 29) {
+            return false
+          } else {
+            return true
+          }
+        }
+      } else if(this.#month === 4 || this.#month === 6 || this.#month === 9 || this.#month === 11) {
+        if(value > 30) {
+          return false
+        } else {
+          return true
+        }
       } else {
-        this.#year = 0
-        this.yearInput.value = ''
+        if(value > 31) {
+          return false
+        } else {
+          return true
+        }
       }
-      this.checkValue(chunk)
+    } else {
+      return true
+    }
+  }
+
+  checkMonth(value) {
+    if(value > 12 || value < 1) {
+      return false
+    }
+    if(this.#day > 0) {
+      if(value === 2) {
+        if(this.#year) {
+          if(this.#day > 29 && this.isLeapYear(this.#year)) {
+            return false
+          } else if(this.#day > 28 && !this.isLeapYear(this.#year)) {
+            return false
+          } else {
+            return true
+          }
+        } else {
+          if(this.#day > 29) {
+            return false
+          } else {
+            return true
+          }
+        }
+      } else if(value === 4 || value === 6 || value === 9 || value === 11) {
+        if(this.#day > 30) {
+          return false
+        } else {
+          return true
+        }
+      } else {
+        if(this.#day > 31) {
+          return false
+        } else {
+          return true
+        }
+      }
+    } else {
+      return true
+    }
+  }
+
+  checkYear(value) {
+    if(value > 9999 || value < 1) {
+      return false
+    }
+    if(this.#month === 2 && this.#day > 0) {
+      if(this.#day > 29 && this.isLeapYear(value)) {
+        return false
+      } else if(this.#day > 28 && !this.isLeapYear(value)) {
+        return false
+      } else {
+        return true
+      }
+    } else {
+      return true
+    }
+  }
+
+  updateDayValue() {
+    const day = Number(this.dayInput.value)
+    if(!isNaN(day) && this.checkDay(day)) {
+      this.updateDay(day)
+    } else {
+      this.updateDay(0)
+    }
+  }
+
+  updateMonthValue() {
+    const month = Number(this.monthInput.value)
+    if(!isNaN(month) && this.checkMonth(month)) {
+      this.updateMonth(month)
+    } else {
+      this.updateMonth(0)
+    }
+  }
+
+  updateYearValue() {
+    const year = Number(this.yearInput.value)
+    if(!isNaN(year) && this.checkYear(year)) {
+      this.updateYear(year)
+    } else {
+      this.updateYear(0)
     }
   }
 
@@ -518,12 +517,58 @@ class WCDateInput extends HTMLElement {
     return this.hasAttribute('year-text') ? this.getAttribute('year-text') : this.#yearText
   }
 
+  get required() {
+    return this.hasAttribute('required')
+  }
+
+  get disabled() {
+    return this.hasAttribute('required')
+  }
+
+  set required(value) {
+    if (value === 'true' || value === true) {
+      this.setAttribute('required', 'true')
+    }
+    if (value === 'false' || value === false) {
+      this.removeAttribute('required')
+    }
+  }
+  
+  set disabled(value) {
+    if (value === 'true' || value === true) {
+      this.setAttribute('disabled', 'true')
+    }
+    if (value === 'false' || value === false) {
+      this.removeAttribute('disabled')
+    }
+  }
+
+  get disabled() {
+    return this.hasAttribute('disabled')
+  }
+
   get validity() {
     return this.internals.validity
   }
 
   get validationMessage() {
     return this.internals.validationMessage
+  }
+
+  get form() {
+    return this.internals.form
+  }
+
+  get name() {
+    return this.getAttribute('name')
+  }
+
+  set name(value) {
+    this.setAttribute('name', value)
+  }
+
+  get willValidate() {
+    return this.internals.willValidate
   }
 
 }

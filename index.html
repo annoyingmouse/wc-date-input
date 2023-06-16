@@ -40,15 +40,40 @@
 <!--<p>While not at the start or end of the pagination there are buttons to allow a jump of 3 pages.</p>-->
     <h2>Examples</h2>
     <h3>Plain input</h3>
-    <form id="example_001" style="display: flex; flex-direction: column;">
-      <wc-date-input name="example_001_field"
-                     min="2019-01-01"
-                     max="2020-12-31" 
-                     day-text="Jour"
-                     month-text="Mois"
-                     year-text="Année"
-                     value="2020-02-30"></wc-date-input>
-      <input type="text" name="example_002_field" required />
+    <form id="example_001">
+      <div>
+        <label for="example_000_field">Example 001 (Bare bones)</label>
+        <wc-date-input name="example_000_field"
+                       id="example_000_field"></wc-date-input>
+      </div>
+      <div>
+        <label for="example_001_field">Example 001</label>
+        <wc-date-input name="example_001_field"
+                       id="example_001_field"
+                       min="2019-01-01"
+                       max="2020-12-31" 
+                       required
+                       value="2020-02-30"></wc-date-input>
+      </div>
+      <div>
+        <label for="example_002_field">Example 002 (French)</label>
+        <wc-date-input name="example_002_field"
+                       id="example_002_field"
+                       min="2019-01-01"
+                       max="2020-12-31" 
+                       day-text="Jour"
+                       month-text="Mois"
+                       year-text="Année"
+                       required
+                       value="2020-02-30"></wc-date-input>
+      </div>
+      <div>
+        <label for="example_002__normal_field">Example 002</label>
+        <input type="text"
+               name="example_002__normal_field"
+               id="example_002__normal_field"
+               required />
+      </div>
       <button type="submit">Submit</button>
     </form>
 
