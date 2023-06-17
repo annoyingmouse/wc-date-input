@@ -7,8 +7,6 @@ class WCDateInput extends HTMLElement {
   #yearText = 'Year'
   #attributes = {}
 
-  static formAssociated = true
-
   static get observedAttributes() {
     return [
       'value',
@@ -22,21 +20,18 @@ class WCDateInput extends HTMLElement {
     ]
   }
 
-  subtractYears(date, years) {
-    return new Date(date.getFullYear() - years, date.getMonth(), date.getDate())
-  }
-
-  addYears(date, years) {
-    return new Date(date.getFullYear() + years, date.getMonth(), date.getDate())
-  }
-
+  static formAssociated = true
   constructor() {
     super()
     this.internals = this.attachInternals()
     this.shadow = this.attachShadow({
-      mode: 'closed'
+      mode: 'closed',
+      delegatesFocus: true
     })
     this.shadow.innerHTML = `${this.css}${this.html}`
+    this.pattern = new RegExp("^\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])$")
+    this.warnedMin = false
+    this.warnedMax = false
   }
 
   connectedCallback() {
@@ -57,18 +52,20 @@ class WCDateInput extends HTMLElement {
       this.monthInput.setAttribute(prop, this.#attributes[prop]);
       this.yearInput.setAttribute(prop, this.#attributes[prop]);
     }
-    const value = this.value // get value from attribute, even if it's incorrect or not set
+    const _ = this.value // get value from attribute, even if it's incorrect or not set
     this.dayInput.value = `${this.#day ? this.#day : ''}`
     this.monthInput.value = `${this.#month ? this.#month : ''}`
     this.yearInput.value = `${this.#year ? this.#year : ''}`
-    this.updateDayValue()
-    this.updateMonthValue()
-    this.updateYearValue()
-    
-    this.addEventListener('blur', () => this.dayInput.focus())
-    if (!this.hasAttribute('tabindex')) {
-      this.setAttribute('tabindex', '0');
+    if(this.#day) {
+      this.updateDayValue()
     }
+    if(this.#month) {
+      this.updateMonthValue()
+    }
+    if(this.#year) {
+      this.updateYearValue()
+    }
+    this.updateDate()
   }
 
   get css() {
@@ -133,12 +130,10 @@ class WCDateInput extends HTMLElement {
           <input id="day"
                  name="day"
                  type="text"
-                 min="1"
-                 max="31"
                  value="${this.#day ? this.#day : ''}"
-                 pattern="[0-9]{1,2}"
                  inputmode="numeric"
-                 data-form-type="date,day" />
+                 data-form-type="date,day"
+                 tabindex="0" />
         </div>
         <div class="form-group">
           <label for="month">
@@ -147,12 +142,10 @@ class WCDateInput extends HTMLElement {
           <input id="month"
                  name="month"
                  type="text"
-                 min="1"
-                 max="12"
                  value="${this.#month ? this.#month : ''}"
-                 pattern="[0-9]{1,2}"
                  inputmode="numeric"
-                 data-form-type="date,month" />
+                 data-form-type="date,month"
+                 tabindex="0" />
         </div>
         <div class="form-group year-inout">
           <label for="year"/>
@@ -162,9 +155,9 @@ class WCDateInput extends HTMLElement {
                  name="year"
                  type="text"
                  value="${this.#year ? this.#year : ''}"
-                 pattern="[0-9]{4}"
                  inputmode="numeric" 
-                 data-form-type="date,year" />
+                 data-form-type="date,year"
+                 tabindex="0" />
         </div>
       </div>
     `
@@ -181,11 +174,6 @@ class WCDateInput extends HTMLElement {
       case 'disabled':
         if(oldValue !== newValue) {
           this.#attributes[name] = newValue !== null
-          this.disabled = newValue !== null
-        }
-        break
-      case 'disabled':
-        if(oldValue !== newValue) {
           this.disabled = newValue !== null
         }
         break
@@ -225,42 +213,6 @@ class WCDateInput extends HTMLElement {
   isLeapYear(year) {
     if(!year) return false
     return (year % 4 === 0 && year % 100 !== 0 || year % 400 === 0)
-  }
-
-  checkValue() {
-    let ok = true
-    this.dayInput.classList.remove('error')
-    this.monthInput.classList.remove('error')
-    this.yearInput.classList.remove('error')
-    if(!this.checkDay()) {
-      this.dayInput.classList.add('error')
-      ok = false
-    }
-    if(!this.checkMonth()) {
-      this.monthInput.classList.add('error')
-      ok = false
-    }
-    if(!this.checkYear()) {
-      this.yearInput.classList.add('error')
-      ok = false
-    }
-    
-    if(ok) {
-      const date = new Date(this.createDateString())
-      if(this.checkValueValidity(date) && this.checkBeforeMax(date) && this.checkAfterMin(date)){
-        this.dayInput.classList.remove('error')
-        this.monthInput.classList.remove('error')
-        this.yearInput.classList.remove('error')
-        this.value = this.createDateString()
-      } else {
-        this.dayInput.classList.add('error')
-        this.monthInput.classList.add('error')
-        this.yearInput.classList.add('error')
-        this.value = ''
-      }
-    } else {
-      this.value = ''
-    }
   }
 
   createDateString() {
@@ -309,11 +261,34 @@ class WCDateInput extends HTMLElement {
     }
   }
 
+  updateDate() {
+    if(this.#day && this.#month && this.#year && this.checkDateIsValid(this.createDateString())) {
+      this.value = this.createDateString()
+    } else {
+      this.value = ''
+    }
+  }
+
+
   checkDay(value) {
     if(value > 31 || value < 1) {
       return false
     }
-    if(this.#month > 0) {
+    if(this.min && this.#year && this.#month) {
+      if(this.#year === this.min.getFullYear() && this.#month === this.min.getMonth() + 1) {
+        if(value < this.min.getDate()) {
+          return false
+        }
+      }
+    }
+    if(this.max && this.#year && this.#month) {
+      if(this.#year === this.max.getFullYear() && this.#month === this.max.getMonth() + 1) {
+        if(value > this.max.getDate()) {
+          return false
+        }
+      }
+    }
+    if(this.#month) {
       if(this.#month === 2) {
         if(this.#year) {
           if(value > 29 && this.isLeapYear(this.#year)) {
@@ -352,7 +327,39 @@ class WCDateInput extends HTMLElement {
     if(value > 12 || value < 1) {
       return false
     }
-    if(this.#day > 0) {
+    if(this.min) {
+      if(this.#year) {
+        if(this.#year === this.min.getFullYear()) {
+          if(value < this.min.getMonth() + 1) {
+            return false
+          }
+        }
+      }
+      if(this.#year && this.#day) {
+        if(this.#year === this.min.getFullYear() && value === this.min.getMonth() + 1) {
+          if(this.#day < this.min.getDate()) {
+            return false
+          }
+        }
+      }
+    }
+    if(this.max) {
+      if(this.#year) {
+        if(this.#year === this.max.getFullYear()) {
+          if(value > this.max.getMonth() + 1) {
+            return false
+          }
+        }
+      }
+      if(this.#year && this.#day) {
+        if(this.#year === this.max.getFullYear() && value === this.max.getMonth() + 1) {
+          if(this.#day > this.max.getDate()) {
+            return false
+          }
+        }
+      }
+    }
+    if(this.#day) {
       if(value === 2) {
         if(this.#year) {
           if(this.#day > 29 && this.isLeapYear(this.#year)) {
@@ -391,6 +398,40 @@ class WCDateInput extends HTMLElement {
     if(value > 9999 || value < 1) {
       return false
     }
+    if(this.min){
+      if (value < this.min.getFullYear()) {
+        return false
+      }
+      if(this.#month && value === this.min.getFullYear()) {
+        if(this.#month < this.min.getMonth() + 1) {
+          return false
+        }
+      }
+      if(this.#day && value === this.min.getFullYear()) {
+        if(this.#month === this.min.getMonth() + 1) {
+          if(this.#day < this.min.getDate()) {
+            return false
+          }
+        }
+      }
+    }
+    if(this.max){
+      if (value > this.max.getFullYear()) {
+        return false
+      }
+      if(this.#month && value === this.max.getFullYear()) {
+        if(this.#month > this.max.getMonth() + 1) {
+          return false
+        }
+      }
+      if(this.#day && value === this.max.getFullYear()) {
+        if(this.#month === this.max.getMonth() + 1) {
+          if(this.#day > this.max.getDate()) {
+            return false
+          }
+        }
+      }
+    }
     if(this.#month === 2 && this.#day > 0) {
       if(this.#day > 29 && this.isLeapYear(value)) {
         return false
@@ -408,6 +449,7 @@ class WCDateInput extends HTMLElement {
     const day = Number(this.dayInput.value)
     if(!isNaN(day) && this.checkDay(day)) {
       this.updateDay(day)
+      this.updateDate()
     } else {
       this.updateDay(0)
     }
@@ -417,6 +459,7 @@ class WCDateInput extends HTMLElement {
     const month = Number(this.monthInput.value)
     if(!isNaN(month) && this.checkMonth(month)) {
       this.updateMonth(month)
+      this.updateDate()
     } else {
       this.updateMonth(0)
     }
@@ -426,66 +469,77 @@ class WCDateInput extends HTMLElement {
     const year = Number(this.yearInput.value)
     if(!isNaN(year) && this.checkYear(year)) {
       this.updateYear(year)
+      this.updateDate()
     } else {
       this.updateYear(0)
     }
   }
 
-  checkValueValidity(date) {
-    return date.getDate() === this.#day && date.getMonth() + 1 === this.#month && date.getFullYear() === this.#year
-  }
-
-  checkBeforeMax(date) {
-    return date.getTime() <= this.max.getTime()
-  }
-
-  checkAfterMin(date) {
-    return date.getTime() >= this.min.getTime()
+  checkDateIsValid(dateString) {
+    if(!this.pattern.test(dateString)) {
+      return false
+    } else {
+      const [year, month, day] = dateString.split('-')
+      const date = new Date(dateString)
+      
+      return date.getDate() === Number(day) && date.getMonth() + 1 === Number(month) && date.getFullYear() === Number(year)
+    }
   }
 
   /**
-   * Default value is now
-   * @param {string|null} name
+   * Gets the value attribute, or null if it is not valid or not set
+   * @param {string|null} value
    * @returns {Date}
    */
   get value() {
-    /**
-     * We check the validity of the value attribute and if it is valid, we return a new Date object, but not before setting the internal variables
-     */
-    const pattern = new RegExp("^\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])$")
-    if(this.hasAttribute('value') && pattern.test(this.getAttribute('value'))){
-      const [year, month, day] = this.getAttribute('value').split('-')
-      this.#month = Number(month)
-      this.#day = Number(day)
-      this.#year = Number(year)
-      const date = new Date(this.getAttribute('value'))
-      if(this.checkValueValidity(date)) {
+    if(this.hasAttribute('value') && this.pattern.test(this.getAttribute('value'))){
+      if(this.checkDateIsValid(this.getAttribute('value'))) {
+        const [year, month, day] = this.getAttribute('value').split('-')
+        this.#day = Number(day)
+        this.#month = Number(month)
+        this.#year = Number(year)
+        this.updateDate()
         return new Date(this.getAttribute('value'))
       } else {
+        this.#day = 0
+        this.#month = 0
+        this.#year = 0
+        this.updateDate()
         return null
       }
     } else {
-      null
+      this.#day = 0
+      this.#month = 0
+      this.#year = 0
+      this.updateDate()
+      return null
     }
   }
 
-  set value(value) {
-    const date = new Date(value)
-    if(this.checkBeforeMax(date) && this.checkAfterMin(date)){
-      this.setAttribute('value', value)
-    } else {
-      this.setAttribute('value', '')
-    }
-    this.internals.setFormValue(value)
+  set value(newValue) {
+    this.setAttribute('value', newValue)
+    this.internals.setFormValue(newValue)
   }
 
   /**
-   * Default value is 120 years ago
+   * Gets the min attribute, or null if it is not valid or not set
    * @param {string|null} min
-   * @returns {Date}
+   * @returns {Date|null}
    */
   get min() {
-    return this.hasAttribute('min') ? new Date(this.getAttribute('min')) : this.subtractYears(new Date(), 120)
+    if(this.hasAttribute('min') && this.pattern.test(this.getAttribute('min'))){
+      if(this.checkDateIsValid(this.getAttribute('min'))) {
+        return new Date(this.getAttribute('min'))
+      } else {
+        if(!this.warnedMin) {
+          console.warn(`Supplied min date (${this.getAttribute('min')}) is not valid for wc-date-input`)  
+          this.warnedMin = true
+        }
+        return null
+      }
+    } else {
+      return null
+    }
   }
 
   set min(value) {
@@ -493,12 +547,24 @@ class WCDateInput extends HTMLElement {
   }
 
   /**
-   * Default value is 0 years from now
+   * Gets the max attribute, or null if it is not valid or not set
    * @param {string|null} max
-   * @returns {Date}
+   * @returns {Date|null}
    */
   get max() {
-    return this.hasAttribute('max') ? new Date(this.getAttribute('max')) : this.addYears(new Date(), 10)
+    if(this.hasAttribute('max') && this.pattern.test(this.getAttribute('max'))){
+      if(this.checkDateIsValid(this.getAttribute('max'))) {
+        return new Date(this.getAttribute('max'))
+      } else {
+        if(!this.warnedMax) {
+          console.warn(`Supplied max date (${this.getAttribute('max')}) is not valid for wc-date-input`)  
+          this.warnedMax = true
+        }
+        return null
+      }
+    } else {
+      return null
+    }
   }
 
   set max(value) {

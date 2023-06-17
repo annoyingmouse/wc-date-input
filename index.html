@@ -41,39 +41,102 @@
     <h2>Examples</h2>
     <h3>Plain input</h3>
     <form id="example_001">
-      <div>
-        <label for="example_000_field">Example 001 (Bare bones)</label>
+      <!-- <div>
+        <label for="example_000_field">Example 000 (Bare bones)</label>
         <wc-date-input name="example_000_field"
                        id="example_000_field"></wc-date-input>
       </div>
+      <hr> -->
       <div>
-        <label for="example_001_field">Example 001</label>
+        <label for="example_001_field">Example 001 (invalid intial date - day value impossible)</label>
         <wc-date-input name="example_001_field"
                        id="example_001_field"
-                       min="2019-01-01"
-                       max="2020-12-31" 
-                       required
                        value="2020-02-30"></wc-date-input>
       </div>
-      <div>
+      <hr>
+      <!-- <div>
         <label for="example_002_field">Example 002 (French)</label>
         <wc-date-input name="example_002_field"
                        id="example_002_field"
-                       min="2019-01-01"
-                       max="2020-12-31" 
                        day-text="Jour"
                        month-text="Mois"
                        year-text="Année"
-                       required
-                       value="2020-02-30"></wc-date-input>
+                       value="2020-02-28"></wc-date-input>
       </div>
+      <hr>
       <div>
+        <label for="example_003_field">Example 003 (<code>min</code> 2023-05-05)</label>
+        <wc-date-input name="example_003_field"
+                       id="example_003_field"
+                       value="2023-05-05"
+                       min="2023-05-05"></wc-date-input>
+      </div>
+      <hr>
+      <div>
+        <label for="example_004_field">Example 004 (invalid <code>min</code> value)</label>
+        <wc-date-input name="example_004_field"
+                       id="example_004_field"
+                       value="2023-05-05"
+                       min="2023-02-30"></wc-date-input>
+      </div>
+      <hr>
+      <div>
+        <label for="example_005_field">Example 005 (<code>max</code> 2023-05-05)</label>
+        <wc-date-input name="example_005_field"
+                       id="example_005_field"
+                       value="2023-05-05"
+                       max="2023-05-05"></wc-date-input>
+      </div>
+      <hr>
+      <div>
+        <label for="example_006_field">Example 006 (invalid <code>min</code> value)</label>
+        <wc-date-input name="example_006_field"
+                       id="example_006_field"
+                       value="2023-05-05"
+                       max="2023-02-30"></wc-date-input>
+      </div>
+      <hr>
+      <div>
+        <label for="example_007_field">Example 007 (<code>max</code> 2023-05-05 &amp; <code>max</code> 2023-05-05)</label>
+        <wc-date-input name="example_007_field"
+                       id="example_007_field"
+                       value="2023-05-05"
+                       min="2023-05-05"
+                       max="2023-05-05"></wc-date-input>
+      </div>
+      <hr>
+      <div>
+        <label for="example_008_field">Example 008 (invalid <code>min</code> &amp; <code>max</code> values)</label>
+        <wc-date-input name="example_008_field"
+                       id="example_008_field"
+                       value="2023-05-05"
+                       min="2023-02-30"
+                       max="2023-02-30"></wc-date-input>
+      </div>
+      <hr>
+      <div>
+        <label for="example_009_field">Example 009 (<code>disabled</code>)</label>
+        <wc-date-input name="example_009_field"
+                       disabled
+                       id="example_009_field"
+                       value="2023-05-05"></wc-date-input>
+      </div>
+      <hr>
+      <div>
+        <label for="example_010 _field">Example 010 (<code>required</code>)</label>
+        <wc-date-input name="example_010_field"
+                       required
+                       id="example_010_field"
+                       value="2023-05-05"></wc-date-input>
+      </div>
+      <hr> -->
+      <!-- <div>
         <label for="example_002__normal_field">Example 002</label>
         <input type="text"
                name="example_002__normal_field"
                id="example_002__normal_field"
                required />
-      </div>
+      </div> -->
       <button type="submit">Submit</button>
     </form>
 
