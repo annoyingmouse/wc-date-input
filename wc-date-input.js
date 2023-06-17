@@ -38,13 +38,19 @@ class WCDateInput extends HTMLElement {
     this.dayInput = this.shadow.querySelector('#day')
     this.monthInput = this.shadow.querySelector('#month')
     this.yearInput = this.shadow.querySelector('#year')
-    this.dayInput.addEventListener('blur', () => {
+    this.dayInput.addEventListener('blur', e => {
+      // const clone = new e.constructor(e.type, e);
+      // this.dispatchEvent(clone);
       this.updateDayValue()
     })
-    this.monthInput.addEventListener('blur', () => {
+    this.monthInput.addEventListener('blur', e => {
+      // const clone = new e.constructor(e.type, e);
+      // this.dispatchEvent(clone);
       this.updateMonthValue()
     })
-    this.yearInput.addEventListener('blur', () => {
+    this.yearInput.addEventListener('blur', e => {
+      // const clone = new e.constructor(e.type, e);
+      // this.dispatchEvent(clone);
       this.updateYearValue()
     })
     for (let prop in this.#attributes) {
@@ -53,6 +59,7 @@ class WCDateInput extends HTMLElement {
       this.yearInput.setAttribute(prop, this.#attributes[prop]);
     }
     const _ = this.value // get value from attribute, even if it's incorrect or not set
+    console.log(`_: ${_}`)
     this.dayInput.value = `${this.#day ? this.#day : ''}`
     this.monthInput.value = `${this.#month ? this.#month : ''}`
     this.yearInput.value = `${this.#year ? this.#year : ''}`
@@ -64,6 +71,9 @@ class WCDateInput extends HTMLElement {
     }
     if(this.#year) {
       this.updateYearValue()
+    }
+    if(!this.#day && !this.#month && !this.#year) {
+      this.value = null
     }
     this.updateDate()
   }
@@ -179,6 +189,7 @@ class WCDateInput extends HTMLElement {
         break
       case 'value':
         if(oldValue !== newValue) {
+          console.log(`oldValue: ${oldValue}, newValue: ${newValue}`)
           this.value = newValue
         }
         break
@@ -223,14 +234,6 @@ class WCDateInput extends HTMLElement {
     }
   }
   
-  checkValidity() {
-    return this.internals.checkValidity()
-  }
-
-  reportValidity() {
-    return this.internals.reportValidity()
-  }
-
   updateDay(value) {
     if(!value) {
       this.#day = 0
@@ -264,8 +267,16 @@ class WCDateInput extends HTMLElement {
   updateDate() {
     if(this.#day && this.#month && this.#year && this.checkDateIsValid(this.createDateString())) {
       this.value = this.createDateString()
+      this.internals.setValidity({})
     } else {
-      this.value = ''
+      this.value = null
+      // if(this.required) {
+      //   const errorMessage = this.hasAttribute('data-valuemissing') ? this.getAttribute('data-valuemissing') : 'Please enter a valid date'
+      //   console.log(errorMessage)
+      //   this.internals.setValidity({
+      //     valueMissing: errorMessage
+      //   }, this.dayInput)
+      // }
     }
   }
 
@@ -449,30 +460,30 @@ class WCDateInput extends HTMLElement {
     const day = Number(this.dayInput.value)
     if(!isNaN(day) && this.checkDay(day)) {
       this.updateDay(day)
-      this.updateDate()
     } else {
       this.updateDay(0)
     }
+    this.updateDate()
   }
 
   updateMonthValue() {
     const month = Number(this.monthInput.value)
     if(!isNaN(month) && this.checkMonth(month)) {
       this.updateMonth(month)
-      this.updateDate()
     } else {
       this.updateMonth(0)
     }
+    this.updateDate()
   }
 
   updateYearValue() {
     const year = Number(this.yearInput.value)
     if(!isNaN(year) && this.checkYear(year)) {
       this.updateYear(year)
-      this.updateDate()
     } else {
       this.updateYear(0)
     }
+    this.updateDate()
   }
 
   checkDateIsValid(dateString) {
@@ -517,6 +528,7 @@ class WCDateInput extends HTMLElement {
   }
 
   set value(newValue) {
+    console.log(newValue)
     this.setAttribute('value', newValue)
     this.internals.setFormValue(newValue)
   }
@@ -613,14 +625,6 @@ class WCDateInput extends HTMLElement {
     return this.hasAttribute('disabled')
   }
 
-  get validity() {
-    return this.internals.validity
-  }
-
-  get validationMessage() {
-    return this.internals.validationMessage
-  }
-
   get form() {
     return this.internals.form
   }
@@ -633,8 +637,24 @@ class WCDateInput extends HTMLElement {
     this.setAttribute('name', value)
   }
 
+  get validity() {
+    return this.internals.validity
+  }
+
+  get validationMessage() {
+    return this.internals.validationMessage
+  }
+
   get willValidate() {
     return this.internals.willValidate
+  }
+
+  checkValidity() {
+    return this.internals.checkValidity()
+  }
+
+  reportValidity() {
+    return this.internals.reportValidity()
   }
 
 }
