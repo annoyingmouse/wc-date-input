@@ -127,7 +127,7 @@
         <wc-date-input name="example_010_field"
                        required
                        id="example_010_field"
-                       data-valuemissing="Please enter your date of birth"
+                       data-value-missing="Please enter your date of birth"
                        value="2023-05-05"></wc-date-input>
       </div>
       <hr>
@@ -147,9 +147,10 @@
         const example_001 = document.getElementById('example_001')
         example_001.addEventListener('submit', e => {
           e.preventDefault()
-          const formData = new FormData(e.target)
+          const formData = new FormData(example_001)
+          const formValidity = example_001.checkValidity()
           const data = Object.fromEntries(formData.entries())
-          console.log(data)
+          console.log(data, formValidity)
         })
       })()
 

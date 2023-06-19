@@ -5,7 +5,7 @@ class WCDateInput extends HTMLElement {
   #dayText = 'Day'
   #monthText = 'Month'
   #yearText = 'Year'
-  #attributes = {}
+  #disabled = false
 
   static get observedAttributes() {
     return [
@@ -38,28 +38,19 @@ class WCDateInput extends HTMLElement {
     this.dayInput = this.shadow.querySelector('#day')
     this.monthInput = this.shadow.querySelector('#month')
     this.yearInput = this.shadow.querySelector('#year')
-    this.dayInput.addEventListener('blur', e => {
-      // const clone = new e.constructor(e.type, e);
-      // this.dispatchEvent(clone);
+    this.dayInput.addEventListener('blur', () => {
       this.updateDayValue()
     })
-    this.monthInput.addEventListener('blur', e => {
-      // const clone = new e.constructor(e.type, e);
-      // this.dispatchEvent(clone);
+    this.monthInput.addEventListener('blur', () => {
       this.updateMonthValue()
     })
-    this.yearInput.addEventListener('blur', e => {
-      // const clone = new e.constructor(e.type, e);
-      // this.dispatchEvent(clone);
+    this.yearInput.addEventListener('blur', () => {
       this.updateYearValue()
     })
-    for (let prop in this.#attributes) {
-      this.dayInput.setAttribute(prop, this.#attributes[prop]);
-      this.monthInput.setAttribute(prop, this.#attributes[prop]);
-      this.yearInput.setAttribute(prop, this.#attributes[prop]);
-    }
-    const _ = this.value // get value from attribute, even if it's incorrect or not set
-    console.log(`_: ${_}`)
+    this.updateInputs()
+  }
+
+  updateInputs() {
     this.dayInput.value = `${this.#day ? this.#day : ''}`
     this.monthInput.value = `${this.#month ? this.#month : ''}`
     this.yearInput.value = `${this.#year ? this.#year : ''}`
@@ -72,10 +63,6 @@ class WCDateInput extends HTMLElement {
     if(this.#year) {
       this.updateYearValue()
     }
-    if(!this.#day && !this.#month && !this.#year) {
-      this.value = null
-    }
-    this.updateDate()
   }
 
   get css() {
@@ -177,20 +164,18 @@ class WCDateInput extends HTMLElement {
     switch (name) {
       case 'required':
         if(oldValue !== newValue) {
-          this.#attributes[name] = newValue !== null
           this.required = newValue !== null
         }
         break
       case 'disabled':
         if(oldValue !== newValue) {
-          this.#attributes[name] = newValue !== null
           this.disabled = newValue !== null
         }
         break
       case 'value':
         if(oldValue !== newValue) {
-          console.log(`oldValue: ${oldValue}, newValue: ${newValue}`)
           this.value = newValue
+          this.populateDate()
         }
         break
       case 'min':
@@ -267,19 +252,10 @@ class WCDateInput extends HTMLElement {
   updateDate() {
     if(this.#day && this.#month && this.#year && this.checkDateIsValid(this.createDateString())) {
       this.value = this.createDateString()
-      this.internals.setValidity({})
     } else {
-      this.value = null
-      // if(this.required) {
-      //   const errorMessage = this.hasAttribute('data-valuemissing') ? this.getAttribute('data-valuemissing') : 'Please enter a valid date'
-      //   console.log(errorMessage)
-      //   this.internals.setValidity({
-      //     valueMissing: errorMessage
-      //   }, this.dayInput)
-      // }
+      this.value = ''
     }
   }
-
 
   checkDay(value) {
     if(value > 31 || value < 1) {
@@ -492,9 +468,34 @@ class WCDateInput extends HTMLElement {
     } else {
       const [year, month, day] = dateString.split('-')
       const date = new Date(dateString)
-      
       return date.getDate() === Number(day) && date.getMonth() + 1 === Number(month) && date.getFullYear() === Number(year)
     }
+  }
+
+  populateDate() {
+    if(this.hasAttribute('value') && this.pattern.test(this.getAttribute('value'))){
+      if(this.checkDateIsValid(this.getAttribute('value'))) {
+        const [year, month, day] = this.getAttribute('value').split('-')
+        this.#day = Number(day)
+        this.#month = Number(month)
+        this.#year = Number(year)
+        this.updateInputs()
+      } else {
+        console.warn(`Supplied value (${this.getAttribute('value')}) is not a valid date (YYYY-MM-DD), ignoring...`)  
+        this.#day = 0
+        this.#month = 0
+        this.#year = 0
+        this.updateInputs()
+        this.value = ''
+      }
+    } else {
+      this.#day = 0
+      this.#month = 0
+      this.#year = 0
+      this.updateInputs()
+      this.value = ''
+    }
+    return this.createDateString()
   }
 
   /**
@@ -503,34 +504,18 @@ class WCDateInput extends HTMLElement {
    * @returns {Date}
    */
   get value() {
-    if(this.hasAttribute('value') && this.pattern.test(this.getAttribute('value'))){
-      if(this.checkDateIsValid(this.getAttribute('value'))) {
-        const [year, month, day] = this.getAttribute('value').split('-')
-        this.#day = Number(day)
-        this.#month = Number(month)
-        this.#year = Number(year)
-        this.updateDate()
-        return new Date(this.getAttribute('value'))
-      } else {
-        this.#day = 0
-        this.#month = 0
-        this.#year = 0
-        this.updateDate()
-        return null
-      }
-    } else {
-      this.#day = 0
-      this.#month = 0
-      this.#year = 0
-      this.updateDate()
-      return null
-    }
+    this.populateDate()
   }
 
   set value(newValue) {
-    console.log(newValue)
     this.setAttribute('value', newValue)
     this.internals.setFormValue(newValue)
+    if(!newValue && this.required) {
+      const errorWarning = this.dataset.valueMissing ?? 'Please enter a date.'
+      this.internals.setValidity({valueMissing: true}, errorWarning, this.#day ? this.dayInput : this.#month ? this.monthInput : this.yearInput)
+    } else {
+      this.internals.setValidity({})
+    }
   }
 
   /**
@@ -544,7 +529,7 @@ class WCDateInput extends HTMLElement {
         return new Date(this.getAttribute('min'))
       } else {
         if(!this.warnedMin) {
-          console.warn(`Supplied min date (${this.getAttribute('min')}) is not valid for wc-date-input`)  
+          console.warn(`Supplied min date (${this.getAttribute('min')}) is not a valid date (YYYY-MM-DD), ignoring...`)  
           this.warnedMin = true
         }
         return null
@@ -569,7 +554,7 @@ class WCDateInput extends HTMLElement {
         return new Date(this.getAttribute('max'))
       } else {
         if(!this.warnedMax) {
-          console.warn(`Supplied max date (${this.getAttribute('max')}) is not valid for wc-date-input`)  
+          console.warn(`Supplied max date (${this.getAttribute('max')}) is not a valid date (YYYY-MM-DD), ignoring...`)  
           this.warnedMax = true
         }
         return null
