@@ -32,3 +32,7 @@ Adding `monthText` will allow you to change the label above the month input
 Adding `yearText` will allow you to change the label above the year input
 
 Adding `data-value-missing` allows you to customise the validation message if `required` is set.
+
+## License
+
+MIT

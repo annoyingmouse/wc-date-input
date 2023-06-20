@@ -619,10 +619,6 @@ class WCDateInput extends HTMLElement {
     return this.hasAttribute('required')
   }
 
-  get disabled() {
-    return this.hasAttribute('required')
-  }
-
   set required(value) {
     if (value === 'true' || value === true) {
       this.setAttribute('required', 'true')
@@ -643,6 +639,10 @@ class WCDateInput extends HTMLElement {
     if (value === 'false' || value === false) {
       this.removeAttribute('readonly')
     }
+  }
+
+  get disabled() {
+    return this.hasAttribute('disabled')
   }
   
   set disabled(value) {
