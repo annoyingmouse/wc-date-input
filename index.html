@@ -41,12 +41,12 @@
     <h2>Examples</h2>
     <h3>Plain input</h3>
     <form id="example_001">
-      <!-- <div>
+      <div>
         <label for="example_000_field">Example 000 (Bare bones)</label>
         <wc-date-input name="example_000_field"
                        id="example_000_field"></wc-date-input>
       </div>
-      <hr> -->
+      <hr>
       <div>
         <label for="example_001_field">Example 001 (invalid intial date - day value impossible)</label>
         <wc-date-input name="example_001_field"
@@ -115,25 +115,33 @@
       </div>
       <hr>
       <div>
-        <label for="example_009_field">Example 009 (<code>disabled</code>)</label>
+        <label for="example_009_field">Example 009 (<code>readonly</code>)</label>
         <wc-date-input name="example_009_field"
-                       disabled
+                       readonly
                        id="example_009_field"
                        value="2023-05-05"></wc-date-input>
       </div>
       <hr>
+
       <div>
-        <label for="example_010 _field">Example 010 (<code>required</code>)</label>
+        <label for="example_0010_field">Example 010 (<code>disabled</code>)</label>
         <wc-date-input name="example_010_field"
-                       required
+                       disabled
                        id="example_010_field"
+                       value="2023-05-05"></wc-date-input>
+      </div>
+      <hr>
+      <div>
+        <label for="example_011_field">Example 011 (<code>required</code>)</label>
+        <wc-date-input name="example_011_field"
+                       required
+                       id="example_011_field"
                        data-value-missing="Please enter your date of birth"
                        value="1972-08-17"></wc-date-input>
       </div>
       <hr>
       <button type="submit">Submit</button>
     </form>
-
     <script type="module" src="wc-date-input.js"></script>
     <script>
       (() => {
@@ -146,8 +154,6 @@
           console.log(data, formValidity)
         })
       })()
-
     </script>
-
   </body>
 </html>

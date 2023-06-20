@@ -8,7 +8,7 @@ class WCDateInput extends HTMLElement {
   #dayText = 'Day'
   #monthText = 'Month'
   #yearText = 'Year'
-  #disabled = false
+  
 
   static get observedAttributes() {
     return [
@@ -16,6 +16,7 @@ class WCDateInput extends HTMLElement {
       'min',
       'max',
       'disabled',
+      'readonly',
       'required',
       'dayText',
       'monthText',
@@ -35,6 +36,7 @@ class WCDateInput extends HTMLElement {
     this.pattern = new RegExp("^\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])$")
     this.warnedMin = false
     this.warnedMax = false
+    this.disabled = false
   }
 
   connectedCallback() {
@@ -133,6 +135,8 @@ class WCDateInput extends HTMLElement {
                  min="1"
                  max="31"
                  pattern="^((0?[1-9])|([12][0-9])|(3[01]))$"
+                 ${this.disabled ? 'disabled' : ''}
+                 ${this.readonly ? 'readonly' : ''}
                  value="${this.#day ? this.#day : ''}"
                  inputmode="numeric"
                  data-form-type="date,day"
@@ -148,6 +152,8 @@ class WCDateInput extends HTMLElement {
                  min="1"
                  max="12"
                  pattern="^((0[1-9])|(1[0-2]))$"
+                 ${this.disabled ? 'disabled' : ''}
+                 ${this.readonly ? 'readonly' : ''}
                  value="${this.#month ? this.#month : ''}"
                  inputmode="numeric"
                  data-form-type="date,month"
@@ -161,6 +167,8 @@ class WCDateInput extends HTMLElement {
                  name="year"
                  type="text"
                  pattern="^\\d{4}$"
+                 ${this.disabled ? 'disabled' : ''}
+                 ${this.readonly ? 'readonly' : ''}
                  value="${this.#year ? this.#year : ''}"
                  inputmode="numeric" 
                  data-form-type="date,year"
@@ -179,7 +187,12 @@ class WCDateInput extends HTMLElement {
         break
       case 'disabled':
         if(oldValue !== newValue) {
-          this.#disabled = newValue !== null
+          this.disabled = newValue !== null
+        }
+        break
+      case "readonly":
+        if(oldValue !== newValue) {
+          this.readonly = newValue !== null
         }
         break
       case 'value':
@@ -616,6 +629,19 @@ class WCDateInput extends HTMLElement {
     }
     if (value === 'false' || value === false) {
       this.removeAttribute('required')
+    }
+  }
+
+  get readonly() {
+    return this.hasAttribute('readonly')
+  }
+
+  set readonly(value) {
+    if (value === 'true' || value === true) {
+      this.setAttribute('readonly', 'true')
+    }
+    if (value === 'false' || value === false) {
+      this.removeAttribute('readonly')
     }
   }
   
