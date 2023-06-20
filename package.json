@@ -1,32 +1,32 @@
 {
     "name": "@annoyingmouse/wc-date-input",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "This web component creates a configurable date input similar to that suggested by the UK Government.",
     "main": "wc-date-input.js",
     "scripts": {
-      "test": "echo \"No test specified\"",
-      "build": "rollup -c"
+        "test": "echo \"No test specified\"",
+        "build": "rollup -c"
     },
     "repository": {
-      "type": "git",
-      "url": "git+https://github.com/annoyingmouse/wc-date-input.git"
+        "type": "git",
+        "url": "git+https://github.com/annoyingmouse/wc-date-input.git"
     },
     "keywords": [
-      "progress",
-      "web-component"
+        "progress",
+        "web-component"
     ],
     "author": "Dominic Myers",
     "license": "MIT",
     "bugs": {
-      "url": "https://github.com/annoyingmouse/wc-daye-input/issues"
+        "url": "https://github.com/annoyingmouse/wc-daye-input/issues"
     },
     "homepage": "https://github.com/annoyingmouse/wc-date-input#readme",
     "prettier": {
-      "singleQuote": true,
-      "semi": false
+        "singleQuote": true,
+        "semi": false
     },
     "devDependencies": {
-      "rollup": "^2.36.2",
-      "rollup-plugin-terser": "^7.0.2"
+        "rollup": "^2.36.2",
+        "rollup-plugin-terser": "^7.0.2"
     }
-  }
+}
