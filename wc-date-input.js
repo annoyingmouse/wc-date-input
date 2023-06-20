@@ -1,3 +1,6 @@
+/**
+ * Nased on: https://design-system.service.gov.uk/components/date-input/
+ */
 class WCDateInput extends HTMLElement {
   #day = 0
   #month = 0
@@ -127,6 +130,9 @@ class WCDateInput extends HTMLElement {
           <input id="day"
                  name="day"
                  type="text"
+                 min="1"
+                 max="31"
+                 pattern="^((0?[1-9])|([12][0-9])|(3[01]))$"
                  value="${this.#day ? this.#day : ''}"
                  inputmode="numeric"
                  data-form-type="date,day"
@@ -139,6 +145,9 @@ class WCDateInput extends HTMLElement {
           <input id="month"
                  name="month"
                  type="text"
+                 min="1"
+                 max="12"
+                 pattern="^((0[1-9])|(1[0-2]))$"
                  value="${this.#month ? this.#month : ''}"
                  inputmode="numeric"
                  data-form-type="date,month"
@@ -151,6 +160,7 @@ class WCDateInput extends HTMLElement {
           <input id="year"
                  name="year"
                  type="text"
+                 pattern="^\\d{4}$"
                  value="${this.#year ? this.#year : ''}"
                  inputmode="numeric" 
                  data-form-type="date,year"
@@ -169,7 +179,7 @@ class WCDateInput extends HTMLElement {
         break
       case 'disabled':
         if(oldValue !== newValue) {
-          this.disabled = newValue !== null
+          this.#disabled = newValue !== null
         }
         break
       case 'value':
@@ -226,6 +236,7 @@ class WCDateInput extends HTMLElement {
     } else {
       this.#day = value
       this.dayInput.value = `${value}`
+      this.dayInput.classList.remove('error')
     }
   }
 
@@ -236,6 +247,7 @@ class WCDateInput extends HTMLElement {
     } else {
       this.#month = value
       this.monthInput.value = `${value}`
+      this.monthInput.classList.remove('error')
     }
   }
 
@@ -246,6 +258,7 @@ class WCDateInput extends HTMLElement {
     } else {
       this.#year = value
       this.yearInput.value = `${value}`
+      this.yearInput.classList.remove('error')
     }
   }
 
@@ -482,16 +495,16 @@ class WCDateInput extends HTMLElement {
         this.updateInputs()
       } else {
         console.warn(`Supplied value (${this.getAttribute('value')}) is not a valid date (YYYY-MM-DD), ignoring...`)  
-        this.#day = 0
-        this.#month = 0
-        this.#year = 0
+        this.#day = this.#day ? this.#day : 0
+        this.#month = this.#month ? this.#month : 0
+        this.#year = this.#year ? this.#year : 0
         this.updateInputs()
         this.value = ''
       }
     } else {
-      this.#day = 0
-      this.#month = 0
-      this.#year = 0
+      this.#day = this.#day ? this.#day : 0
+      this.#month = this.#month ? this.#month : 0
+      this.#year = this.#year ? this.#year : 0
       this.updateInputs()
       this.value = ''
     }
@@ -512,7 +525,16 @@ class WCDateInput extends HTMLElement {
     this.internals.setFormValue(newValue)
     if(!newValue && this.required) {
       const errorWarning = this.dataset.valueMissing ?? 'Please enter a date.'
-      this.internals.setValidity({valueMissing: true}, errorWarning, this.#day ? this.dayInput : this.#month ? this.monthInput : this.yearInput)
+      this.internals.setValidity({valueMissing: true}, errorWarning, !this.#day ? this.dayInput : !this.#month ? this.monthInput : this.yearInput)
+      if(!this.#day) {
+        this.dayInput.classList.add('error')
+      }
+      if(!this.#month) {
+        this.monthInput.classList.add('error')
+      }
+      if(!this.#year) {
+        this.yearInput.classList.add('error')
+      }
     } else {
       this.internals.setValidity({})
     }
@@ -604,10 +626,6 @@ class WCDateInput extends HTMLElement {
     if (value === 'false' || value === false) {
       this.removeAttribute('disabled')
     }
-  }
-
-  get disabled() {
-    return this.hasAttribute('disabled')
   }
 
   get form() {
