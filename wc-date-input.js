@@ -21,6 +21,7 @@ class WCDateInput extends HTMLElement {
       'dayText',
       'monthText',
       'yearText',
+      'dataErrorText'
     ]
   }
 
@@ -74,15 +75,27 @@ class WCDateInput extends HTMLElement {
     return `
       <style>
         .date-input {
-          display: grid; 
-          grid-template-columns: 2.75em 2.75em 4em;
-          gap: 0% 1em; 
-          font-family: arial,sans-serif;
+          font-family: arial, sans-serif;
+          position: relative;
         }
         .date-input:after {
           content: "";
           display: block;
           clear: both;
+        }
+        .date-input.error::before {
+          content: "";
+          left: -15px;
+          width: 5px;
+          height: 100%;
+          opacity: 1;
+          background: #D4352C;
+          position: absolute;
+        }
+        .form-group-holder {
+          display: grid; 
+          grid-template-columns: 2.75em 2.75em 4em;
+          gap: 0% 1em; 
         }
         .form-group {
           display: flex;
@@ -102,6 +115,9 @@ class WCDateInput extends HTMLElement {
           text-size-adjust: 100%;
           font-smoothing: antialiased;
         }
+        label.error {
+          color: #D4352C;
+        }
         input {
           height: 2em;
           margin-top: 0;
@@ -118,62 +134,77 @@ class WCDateInput extends HTMLElement {
           outline-offset: 0;
           box-shadow: inset 0 0 0 .15em;
         }
+        span.error {
+          display: block;
+          color: #D4352C;
+          font-size: .85em;
+          margin-top: .5em;
+        }
       </style>
     `
   }
 
   get html() {
     return `
-      <div class="date-input">
-        <div class="form-group">
-          <label for="day">
-            ${this.dayText}
-          </label>
-          <input id="day"
-                 name="day"
-                 type="text"
-                 min="1"
-                 max="31"
-                 pattern="^((0?[1-9])|([12][0-9])|(3[01]))$"
-                 ${this.disabled ? 'disabled' : ''}
-                 ${this.readonly ? 'readonly' : ''}
-                 value="${this.#day ? this.#day : ''}"
-                 inputmode="numeric"
-                 data-form-type="date,day"
-                 tabindex="0" />
+      <div class="date-input ${this.errorText ? 'error' : ''}">
+        <div class="form-group-holder">
+          <div class="form-group">
+            <label for="day"
+                  class="${this.errorText ? 'error' : ''}">
+              ${this.dayText}
+            </label>
+            <input id="day"
+                   class="${this.errorText ? 'error' : ''}
+                   name="day"
+                   type="text"
+                   min="1"
+                   max="31"
+                   pattern="^((0?[1-9])|([12][0-9])|(3[01]))$"
+                   ${this.disabled ? 'disabled' : ''}
+                   ${this.readonly ? 'readonly' : ''}
+                   value="${this.#day ? this.#day : ''}"
+                   inputmode="numeric"
+                   data-form-type="date,day"
+                   tabindex="0" />
+          </div>
+          <div class="form-group">
+            <label for="month"
+                  class="${this.errorText ? 'error' : ''}">
+              ${this.monthText}
+            </label>
+            <input id="month"
+                   class="${this.errorText ? 'error' : ''}
+                   name="month"
+                   type="text"
+                   min="1"
+                   max="12"
+                   pattern="^((0[1-9])|(1[0-2]))$"
+                   ${this.disabled ? 'disabled' : ''}
+                   ${this.readonly ? 'readonly' : ''}
+                   value="${this.#month ? this.#month : ''}"
+                   inputmode="numeric"
+                   data-form-type="date,month"
+                   tabindex="0" />
+          </div>
+          <div class="form-group year-input">
+            <label for="year"
+                  class="${this.errorText ? 'error' : ''}">
+              ${this.yearText}
+            </label>
+            <input id="year"
+                   class="${this.errorText ? 'error' : ''}
+                   name="year"
+                   type="text"
+                   pattern="^\\d{4}$"
+                   ${this.disabled ? 'disabled' : ''}
+                   ${this.readonly ? 'readonly' : ''}
+                   value="${this.#year ? this.#year : ''}"
+                   inputmode="numeric" 
+                   data-form-type="date,year"
+                   tabindex="0" />
+          </div>
         </div>
-        <div class="form-group">
-          <label for="month">
-            ${this.monthText}
-          </label>
-          <input id="month"
-                 name="month"
-                 type="text"
-                 min="1"
-                 max="12"
-                 pattern="^((0[1-9])|(1[0-2]))$"
-                 ${this.disabled ? 'disabled' : ''}
-                 ${this.readonly ? 'readonly' : ''}
-                 value="${this.#month ? this.#month : ''}"
-                 inputmode="numeric"
-                 data-form-type="date,month"
-                 tabindex="0" />
-        </div>
-        <div class="form-group year-inout">
-          <label for="year"/>
-            ${this.yearText}
-          </label>
-          <input id="year"
-                 name="year"
-                 type="text"
-                 pattern="^\\d{4}$"
-                 ${this.disabled ? 'disabled' : ''}
-                 ${this.readonly ? 'readonly' : ''}
-                 value="${this.#year ? this.#year : ''}"
-                 inputmode="numeric" 
-                 data-form-type="date,year"
-                 tabindex="0" />
-        </div>
+        ${this.errorText ? `<span class="error"><strong>${this.errorText}</strong></span>` : ''}
       </div>
     `
   }
@@ -226,6 +257,10 @@ class WCDateInput extends HTMLElement {
           this.yearText = newValue !== null ? newValue : null
         }
         break
+      case 'data-error-text':
+        if(oldValue !== newValue) {
+          console.log("Changed")
+        }
     }
   }
 
@@ -505,22 +540,20 @@ class WCDateInput extends HTMLElement {
         this.#day = Number(day)
         this.#month = Number(month)
         this.#year = Number(year)
-        this.updateInputs()
       } else {
         console.warn(`Supplied value (${this.getAttribute('value')}) is not a valid date (YYYY-MM-DD), ignoring...`)  
         this.#day = this.#day ? this.#day : 0
         this.#month = this.#month ? this.#month : 0
         this.#year = this.#year ? this.#year : 0
-        this.updateInputs()
         this.value = ''
       }
     } else {
       this.#day = this.#day ? this.#day : 0
       this.#month = this.#month ? this.#month : 0
       this.#year = this.#year ? this.#year : 0
-      this.updateInputs()
       this.value = ''
     }
+    this.updateInputs()
     return this.createDateString()
   }
 
@@ -534,22 +567,27 @@ class WCDateInput extends HTMLElement {
   }
 
   set value(newValue) {
-    this.setAttribute('value', newValue)
-    this.internals.setFormValue(newValue)
-    if(!newValue && this.required) {
-      const errorWarning = this.dataset.valueMissing ?? 'Please enter a date.'
-      this.internals.setValidity({valueMissing: true}, errorWarning, !this.#day ? this.dayInput : !this.#month ? this.monthInput : this.yearInput)
-      if(!this.#day) {
-        this.dayInput.classList.add('error')
+    if(this.getAttribute('value') !== newValue) {
+      this.setAttribute('value', newValue)
+      this.internals.setFormValue(newValue)
+      if(!newValue && this.required) {
+        const errorWarning = this.dataset.valueMissing ?? 'Please enter a date.'
+        this.internals.setValidity({valueMissing: true}, errorWarning, !this.#day ? this.dayInput : !this.#month ? this.monthInput : this.yearInput)
+        if(!this.#day) {
+          this.dayInput.classList.add('error')
+        }
+        if(!this.#month) {
+          this.monthInput.classList.add('error')
+        }
+        if(!this.#year) {
+          this.yearInput.classList.add('error')
+        }
+      } else {
+        this.internals.setValidity({})
       }
-      if(!this.#month) {
-        this.monthInput.classList.add('error')
-      }
-      if(!this.#year) {
-        this.yearInput.classList.add('error')
-      }
-    } else {
-      this.internals.setValidity({})
+      this.dispatchEvent(new Event('change', {
+        bubbles: true
+      }))
     }
   }
 
@@ -613,6 +651,10 @@ class WCDateInput extends HTMLElement {
 
   get yearText() {
     return this.hasAttribute('year-text') ? this.getAttribute('year-text') : this.#yearText
+  }
+
+  get errorText() {
+    return this.dataset.errorText ? this.dataset.errorText : null
   }
 
   get required() {

@@ -51,11 +51,12 @@
       <li>Adding <code>monthText</code> will allow you to change the label above the month input.</li>
       <li>Adding <code>yearText</code> will allow you to change the label above the year input.</li>
       <li>Adding <code>data-value-missing</code> allows you to customise the validation message if <code>required</code> is set.</li>
+      <li>Adding <code>data-error-text</code> allows you to use external validation to set the field as invalid.</li>
     </ul>
     <h2>Examples</h2>
     <h3>Plain input</h3>
     <form id="example_001">
-      <div>
+      <!-- <div>
         <label for="example_000_field">Example 000 (Bare bones)</label>
         <wc-date-input name="example_000_field"
                        id="example_000_field"></wc-date-input>
@@ -153,7 +154,21 @@
                        data-value-missing="Please enter your date of birth"
                        value="1972-08-17"></wc-date-input>
       </div>
+      <hr> -->
+      <div>
+        <label for="example_012_field">Example 012 (<code>error-text="Please enter your date of birth"</code>)</label>
+        <wc-date-input name="example_012_field"
+                       data-error-text="Please enter your date of birth"
+                       id="example_012_field"></wc-date-input>
+      </div>
       <hr>
+      <!-- <div>
+        <label for="example_013_field">Example 013 (empty <code>error-test=""</code>)</label>
+        <wc-date-input name="example_013_field"
+                       data-error-text=""
+                       id="example_013_field"></wc-date-input>
+      </div>
+      <hr> -->
       <button type="submit">Submit</button>
     </form>
     <script type="module" src="wc-date-input.js"></script>
@@ -166,6 +181,18 @@
           const formValidity = example_001.checkValidity()
           const data = Object.fromEntries(formData.entries())
           console.log(data, formValidity)
+        })
+        const example_012_field = document.getElementById('example_012_field')
+        example_012_field.addEventListener('change', e => {
+          console.log(e.target.value)
+          console.log(e.target.getAttribute('value'))
+          if(e.target.getAttribute('value')){
+            console.log("Remove error text")
+            e.target.removeAttribute('data-error-text')
+          } else {
+            console.log("Add error text")
+            e.target.setAttribute('data-error-text', 'Please enter your date of birth')
+          }
         })
       })()
     </script>
