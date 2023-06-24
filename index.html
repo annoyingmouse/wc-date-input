@@ -29,9 +29,8 @@
       </a>
     </p>
     <p>Demo here: <a href="https://codepen.io/annoyingmouse/pen/BaGzPdv">https://codepen.io/annoyingmouse/pen/BaGzPdv</a></p>
-    <p>A web component for date input which follows the principles of that used by the <a href="https://design-system.service.gov.uk/components/date-input/">UK Government</a> (they do have excellent user interfaces)</p>
-    
-
+    <p>An opinionated web component for date input which follows the principles of that used by the <a href="https://design-system.service.gov.uk/components/date-input/">UK Government</a> (they do have excellent user interfaces).</p>
+    <p>It is opinionated because it will not allow you to enter invalid dates or dates which are before the optional <code>min</code> or are after the optional <code>max</code> values provided as attributes.</p>
     <h2>Installation</h2>
     <pre style='color:#000000;background:#ffffff;'><span style='color:#a65700; '>&lt;</span><span style='color:#800000; font-weight:bold; '>script</span><span style='color:#274796; '> </span><span style='color:#074726; '>type</span><span style='color:#808030; '>=</span><span style='color:#0000e6; '>"module"</span><span style='color:#274796; '> </span><span style='color:#074726; '>src</span><span style='color:#808030; '>=</span><span style='color:#0000e6; '>"https://unpkg.com/@annoyingmouse/wc-date-input/wc-date-input.js"</span><span style='color:#a65700; '>></span><span style='color:#a65700; '>&lt;/</span><span style='color:#800000; font-weight:bold; '>script</span><span style='color:#a65700; '>></span></pre>
     <p>Alternatively:</p>
@@ -41,92 +40,110 @@
     <p>Please remember to change <code>[WHATEVER CDN]</code> to your favourite <abbr title="Content Delivery Network">CDN</abbr></p>
     <h2>Configuration</h2>
     <ul>
-      <li>Adding a <code>value</code> will allow you to pre-populate the input - the date will be checked and discarded if invalid.</li>
-      <li>Adding a <code>min</code> value will allow you to set a minimum valid date - the date will be checked and discarded if invalid.</li>
-      <li>Adding a <code>max</code> value will allow you to set a maximum valid date - the date will be checked and discarded if invalid.</li>
-      <li>Adding <code>disabled</code> will disabled the input.</li>
-      <li>Adding <code>required</code> will enable validation of the input. The component is opinionated about what it will allow you to enter (invalid dates or those outside the min and max range will not be accepted) - you should not be able to enter invalid dates.</li>
-      <li>Adding <code>readonly</code> will prevent the input from changing.</li>
-      <li>Adding <code>dayText</code> will allow you to change the label above the day input.</li>
-      <li>Adding <code>monthText</code> will allow you to change the label above the month input.</li>
-      <li>Adding <code>yearText</code> will allow you to change the label above the year input.</li>
+      <li>Adding a <code>value</code> will allow you to pre-populate the input - the <code>value</code> date will be checked and ignored if invalid.</li>
+      <li>Adding a <code>min</code> value will allow you to set a minimum valid date - the <code>min</code> date will be checked for validity and ignored if invalid.</li>
+      <li>Adding a <code>max</code> value will allow you to set a maximum valid date - the <code>max</code> date will be checked for validity and ignored if invalid.</li>
+      <li>Adding <code>disabled</code> disables the input.</li>
+      <li>Adding <code>required</code> enables validation of the input. The component is opinionated about what it will allow you to enter (invalid dates or those outside the <code>min</code> and <code>max</code> range will not be accepted) - you should not be able to enter invalid dates.</li>
+      <li>Adding <code>readonly</code> prevents the input from changing.</li>
+      <li>Adding <code>data-day-text</code> allows you to change the label above the day input.</li>
+      <li>Adding <code>data-month-text</code> allows you to change the label above the month input.</li>
+      <li>Adding <code>data-year-text</code> allows you to change the label above the year input.</li>
       <li>Adding <code>data-value-missing</code> allows you to customise the validation message if <code>required</code> is set.</li>
       <li>Adding <code>data-error-text</code> allows you to use external validation to set the field as invalid.</li>
     </ul>
     <h2>Examples</h2>
     <h3>Plain input</h3>
     <form id="example_001">
-      <!-- <div>
-        <label for="example_000_field">Example 000 (Bare bones)</label>
+      <div>
+        <label for="example_000_field">Example 000</label>
         <wc-date-input name="example_000_field"
                        id="example_000_field"></wc-date-input>
+        <br/>
+        <p>Plain input, no attributes set.</p>
       </div>
       <hr>
       <div>
-        <label for="example_001_field">Example 001 (invalid intial date - day value impossible)</label>
+        <label for="example_001_field">Example 001 (<code>value</code>)</label>
         <wc-date-input name="example_001_field"
                        id="example_001_field"
                        value="2020-02-30"></wc-date-input>
+        <br/>
+        <p><code>2020-02-30</code> is not a valid date, so the initial <code>value</code> is discarded.</p>
       </div>
       <hr>
       <div>
-        <label for="example_002_field">Example 002 (French)</label>
+        <label for="example_002_field">Example 002 (<code>data-day-text</code>, <code>data-month-text</code> &amp; <code>data-year-text</code>)</label>
         <wc-date-input name="example_002_field"
                        id="example_002_field"
-                       day-text="Jour"
-                       month-text="Mois"
-                       year-text="Année"
+                       data-day-text="Jour"
+                       data-month-text="Mois"
+                       data-year-text="Année"
                        value="2020-02-28"></wc-date-input>
+        <br/>
+        <p>Change the label text using the data <code>text</code> attributes, also set the <code>value</code> to a random date in the last year (<code id="example_002_field_value">2020-02-28</code>).</p>
       </div>
       <hr>
       <div>
-        <label for="example_003_field">Example 003 (<code>min</code> 2023-05-05)</label>
+        <label for="example_003_field">Example 003 (<code>min</code>)</label>
         <wc-date-input name="example_003_field"
                        id="example_003_field"
                        value="2023-05-05"
                        min="2023-05-05"></wc-date-input>
+        <br/>
+        <p><code>min</code> attribute set to <code>2023-05-05</code>.</p>
       </div>
       <hr>
       <div>
-        <label for="example_004_field">Example 004 (invalid <code>min</code> value)</label>
+        <label for="example_004_field">Example 004 (<code>min</code>)</label>
         <wc-date-input name="example_004_field"
                        id="example_004_field"
                        value="2023-05-05"
                        min="2023-02-30"></wc-date-input>
+        <br/>
+        <p><code>min</code> attribute set to <code>2023-02-30</code> - it is an invalid date, so ignored and a console warning raised.</p>
       </div>
       <hr>
       <div>
-        <label for="example_005_field">Example 005 (<code>max</code> 2023-05-05)</label>
+        <label for="example_005_field">Example 005 (<code>max</code>)</label>
         <wc-date-input name="example_005_field"
                        id="example_005_field"
                        value="2023-05-05"
                        max="2023-05-05"></wc-date-input>
+        <br/>
+        <p><code>max</code> attribute set to <code>2023-05-05</code>.</p>
       </div>
       <hr>
       <div>
-        <label for="example_006_field">Example 006 (invalid <code>min</code> value)</label>
+        <label for="example_006_field">Example 006 (<code>max</code>)</label>
         <wc-date-input name="example_006_field"
                        id="example_006_field"
                        value="2023-05-05"
                        max="2023-02-30"></wc-date-input>
+        <br/>
+        <p><code>max</code> attribute set to <code>2023-02-30</code> - it is an invalid date, so ignored and a console warning raised</p>
       </div>
       <hr>
       <div>
-        <label for="example_007_field">Example 007 (<code>max</code> 2023-05-05 &amp; <code>max</code> 2023-05-05)</label>
+        <label for="example_007_field">Example 007 (<code>min</code> &amp; <code>max</code>)</label>
         <wc-date-input name="example_007_field"
                        id="example_007_field"
                        value="2023-05-05"
                        min="2023-05-05"
                        max="2023-05-05"></wc-date-input>
+        <br/>
+        <p><code>min</code> attribute set to <code>2023-05-05</code> and <code>max</code> attribute set to <code>2023-05-05</code>.</p>
       </div>
       <hr>
       <div>
-        <label for="example_008_field">Example 008 (invalid <code>min</code> &amp; <code>max</code> values)</label>
+        <label for="example_008_field">Example 008 (<code>min</code> &amp; <code>max</code>)</label>
         <wc-date-input name="example_008_field"
                        id="example_008_field"
                        value="2023-05-05"
                        min="2023-02-30"
                        max="2023-02-30"></wc-date-input>
+        <br/>
+        <p><code>max</code> attribute set to <code>2023-02-30</code> &amp; <code>max</code> attribute set to <code>2023-02-30</code> - both are invalid dates, so ignored and two console warnings raised.</p>
       </div>
       <hr>
       <div>
@@ -147,34 +164,60 @@
       </div>
       <hr>
       <div>
-        <label for="example_011_field">Example 011 (<code>required</code>)</label>
+        <label for="example_011_field">Example 011</label>
         <wc-date-input name="example_011_field"
                        required
                        id="example_011_field"
                        data-value-missing="Please enter your date of birth"
                        value="1972-08-17"></wc-date-input>
+        <br/>
+        <p>This field is <code>required</code> - the default <a href="https://developer.mozilla.org/en-US/docs/Web/API/ValidityState/valueMissing"><code>valueMissing</code></a> message can be changed by setting the <code>data-value-missing</code> attribute, here it is set to <code>Please enter your date of birth</code>. You can see it in action by submitting the form, the validation is attached to the first invalid field.</p>
       </div>
-      <hr> -->
+      <hr>
       <div>
-        <label for="example_012_field">Example 012 (<code>error-text="Please enter your date of birth"</code>)</label>
+        <label for="example_012_field">Example 012</label>
         <wc-date-input name="example_012_field"
                        data-error-text="Please enter your date of birth"
                        id="example_012_field"></wc-date-input>
+        <br/>
+        <p>Validation can be externally controlled by setting the <code>data-error-text</code> attribute, this is useful if you want to control the validity outside the component (here we're setting it to <code id="example_012_field_error_text">Please enter your date of birth</code>).</p>
       </div>
       <hr>
-      <!-- <div>
-        <label for="example_013_field">Example 013 (empty <code>error-test=""</code>)</label>
+      <div>
+        <label for="example_013_field">Example 013</label>
         <wc-date-input name="example_013_field"
                        data-error-text=""
                        id="example_013_field"></wc-date-input>
+        <br/>
+        <p>Removing externally controlled validation is accomplished by emptying or removing the <code>data-error-text</code> attribute.</p>
       </div>
-      <hr> -->
+      <hr>
       <button type="submit">Submit</button>
     </form>
     <script type="module" src="wc-date-input.js"></script>
     <script>
+      const getRamdomDateInLastYear = () => {
+        const start = new Date().getTime() - (1000 * 60 * 60 * 24 * 365)
+        const end = new Date().getTime()
+        const newDate = new Date(Math.floor(Math.random() * (end - start + 1) + start))
+        const y = newDate.getFullYear()
+        const m = ('0' + (newDate.getMonth() + 1)).slice(-2)
+        const d = ('0' + newDate.getDate()).slice(-2)
+        return `${y}-${m}-${d}`
+      }
+
+
       (() => {
+        
         const example_001 = document.getElementById('example_001')
+        const example_002_field = document.getElementById('example_002_field')
+        const example_002_field_value = document.getElementById('example_002_field_value')
+        const example_012_field = document.getElementById('example_012_field')
+        const example_012_field_error_text = document.getElementById('example_012_field_error_text')
+
+        /**
+         * Hijack the `submit` and display field values in the console
+         */
         example_001.addEventListener('submit', e => {
           e.preventDefault()
           const formData = new FormData(example_001)
@@ -182,18 +225,64 @@
           const data = Object.fromEntries(formData.entries())
           console.log(data, formValidity)
         })
-        const example_012_field = document.getElementById('example_012_field')
-        example_012_field.addEventListener('change', e => {
-          console.log(e.target.value)
-          console.log(e.target.getAttribute('value'))
-          if(e.target.getAttribute('value')){
-            console.log("Remove error text")
-            e.target.removeAttribute('data-error-text')
+
+        
+        let language = 'german'
+        const changeLanguage = () => {
+          if(language === 'french'){
+            language = 'english'
+            example_002_field.setAttribute('data-day-text', 'Day')
+            example_002_field.setAttribute('data-month-text', 'Month')
+            example_002_field.setAttribute('data-year-text', 'Year')
+          } else if(language === 'english') {
+            language = 'german'
+            example_002_field.setAttribute('data-day-text', 'Jour')
+            example_002_field.setAttribute('data-month-text', 'Mois')
+            example_002_field.setAttribute('data-year-text', 'Année')
           } else {
-            console.log("Add error text")
-            e.target.setAttribute('data-error-text', 'Please enter your date of birth')
+            language = 'french'
+            example_002_field.setAttribute('data-day-text', 'Tag')
+            example_002_field.setAttribute('data-month-text', 'Monat')
+            example_002_field.setAttribute('data-year-text', 'Jahr')
+          }
+          const newDate = getRamdomDateInLastYear()
+          example_002_field.value = newDate
+          example_002_field_value.innerText = newDate
+        }
+        setInterval(changeLanguage, 2000)
+        
+        const changeErrorText = () => {
+          if(language === 'french'){
+            language = 'english'
+            example_012_field.setAttribute('data-error-text', 'Please enter your date of birth')
+            example_012_field_error_text.innerText = 'Please enter your date of birth'
+          } else if(language === 'english') {
+            language = 'german'
+            example_012_field.setAttribute('data-error-text', 'Veuillez entrer votre date de naissance')
+            example_012_field_error_text.innerText = 'Veuillez entrer votre date de naissance'
+          } else {
+            language = 'french'
+            example_012_field.setAttribute('data-error-text', 'Bitte geben Sie Ihr Geburtsdatum ein')
+            example_012_field_error_text.innerText = 'Bitte geben Sie Ihr Geburtsdatum ein'
+          }
+        }
+
+        let changeErrorTextInterval = setInterval(changeErrorText, 2000)
+        let isChangeErrorTextIntervalRunning = true
+
+        example_012_field.addEventListener('change', function(e){
+          if(e.target.value){
+            e.target.removeAttribute('data-error-text')
+            clearInterval(changeErrorTextInterval)
+            isChangeErrorTextIntervalRunning = false
+          } else {
+            if(!isChangeErrorTextIntervalRunning){
+              isChangeErrorTextIntervalRunning = true
+              changeErrorTextInterval = setInterval(changeErrorText, 2000)
+            }
           }
         })
+
       })()
     </script>
   </body>

@@ -9,7 +9,6 @@ class WCDateInput extends HTMLElement {
   #monthText = 'Month'
   #yearText = 'Year'
   
-
   static get observedAttributes() {
     return [
       'value',
@@ -18,10 +17,10 @@ class WCDateInput extends HTMLElement {
       'disabled',
       'readonly',
       'required',
-      'dayText',
-      'monthText',
-      'yearText',
-      'dataErrorText'
+      'data-day-text',
+      'data-month-text',
+      'data-year-text',
+      'data-error-text'
     ]
   }
 
@@ -38,12 +37,17 @@ class WCDateInput extends HTMLElement {
     this.warnedMin = false
     this.warnedMax = false
     this.disabled = false
-  }
-
-  connectedCallback() {
     this.dayInput = this.shadow.querySelector('#day')
     this.monthInput = this.shadow.querySelector('#month')
     this.yearInput = this.shadow.querySelector('#year')
+    this.errorTextElements = this.shadow.querySelectorAll('.can-have-user-error')
+    this.errorMessageElement = this.shadow.querySelector('#error-message')
+    this.forDay = this.shadow.querySelector('label[for="day"]')
+    this.forMonth = this.shadow.querySelector('label[for="month"]')
+    this.forYear = this.shadow.querySelector('label[for="year"]')
+  }
+
+  connectedCallback() {
     this.dayInput.addEventListener('blur', () => {
       this.updateDayValue()
     })
@@ -83,7 +87,7 @@ class WCDateInput extends HTMLElement {
           display: block;
           clear: both;
         }
-        .date-input.error::before {
+        .date-input.user-error::before {
           content: "";
           left: -15px;
           width: 5px;
@@ -115,7 +119,7 @@ class WCDateInput extends HTMLElement {
           text-size-adjust: 100%;
           font-smoothing: antialiased;
         }
-        label.error {
+        label.user-error {
           color: #D4352C;
         }
         input {
@@ -126,6 +130,9 @@ class WCDateInput extends HTMLElement {
           padding: .5em;
           border-radius: 0;
         }
+        input.user-error {
+          border-color: #D4352C;
+        }
         input.error {
           border-color: #D4352C;
         }
@@ -134,7 +141,10 @@ class WCDateInput extends HTMLElement {
           outline-offset: 0;
           box-shadow: inset 0 0 0 .15em;
         }
-        span.error {
+        span.can-have-user-error {
+          display: none;
+        }
+        span.can-have-user-error.user-error {
           display: block;
           color: #D4352C;
           font-size: .85em;
@@ -146,15 +156,15 @@ class WCDateInput extends HTMLElement {
 
   get html() {
     return `
-      <div class="date-input ${this.errorText ? 'error' : ''}">
+      <div class="date-input can-have-user-error${this.errorText ? ' user-error' : ''}">
         <div class="form-group-holder">
           <div class="form-group">
             <label for="day"
-                  class="${this.errorText ? 'error' : ''}">
+                   class="can-have-user-error${this.errorText ? ' user-error' : ''}">
               ${this.dayText}
             </label>
             <input id="day"
-                   class="${this.errorText ? 'error' : ''}
+                   class="can-have-user-error${this.errorText ? ' user-error' : ''}" 
                    name="day"
                    type="text"
                    min="1"
@@ -169,11 +179,11 @@ class WCDateInput extends HTMLElement {
           </div>
           <div class="form-group">
             <label for="month"
-                  class="${this.errorText ? 'error' : ''}">
+                   class="can-have-user-error${this.errorText ? ' user-error' : ''}"> 
               ${this.monthText}
             </label>
             <input id="month"
-                   class="${this.errorText ? 'error' : ''}
+                   class="can-have-user-error${this.errorText ? ' user-error' : ''}"
                    name="month"
                    type="text"
                    min="1"
@@ -188,11 +198,11 @@ class WCDateInput extends HTMLElement {
           </div>
           <div class="form-group year-input">
             <label for="year"
-                  class="${this.errorText ? 'error' : ''}">
+                   class="can-have-user-error${this.errorText ? ' user-error' : ''}">
               ${this.yearText}
             </label>
             <input id="year"
-                   class="${this.errorText ? 'error' : ''}
+                   class="can-have-user-error${this.errorText ? ' user-error' : ''}"
                    name="year"
                    type="text"
                    pattern="^\\d{4}$"
@@ -204,7 +214,9 @@ class WCDateInput extends HTMLElement {
                    tabindex="0" />
           </div>
         </div>
-        ${this.errorText ? `<span class="error"><strong>${this.errorText}</strong></span>` : ''}
+        <span class="can-have-user-error${this.errorText ? ' user-error' : ''}">
+          <strong id="error-message">${this.errorText}</strong>
+        </span>
       </div>
     `
   }
@@ -242,24 +254,34 @@ class WCDateInput extends HTMLElement {
           this.max = newValue !== null ? newValue : null
         }
         break
-      case 'day-text':
+      case 'data-day-text':
         if(oldValue !== newValue) {
-          this.dayText = newValue !== null ? newValue : null
+          this.forDay.innerText = this.dayText
         }
         break
-      case 'month-text':
+      case 'data-month-text':
         if(oldValue !== newValue) {
-          this.monthText = newValue !== null ? newValue : null
+          this.forMonth.innerText = this.monthText
         }
         break
-      case 'year-text':
+      case 'data-year-text':
         if(oldValue !== newValue) {
-          this.yearText = newValue !== null ? newValue : null
+          this.forYear.innerText = this.yearText
         }
         break
       case 'data-error-text':
         if(oldValue !== newValue) {
-          console.log("Changed")
+          if(newValue) {
+            this.errorTextElements.forEach(element => {
+              element.classList.add('user-error')
+              this.errorMessageElement.innerText = newValue
+            })
+          } else {
+            this.errorTextElements.forEach(element => {
+              element.classList.remove('user-error')
+              this.errorMessageElement.innerText = ''
+            })
+          }
         }
     }
   }
@@ -545,15 +567,15 @@ class WCDateInput extends HTMLElement {
         this.#day = this.#day ? this.#day : 0
         this.#month = this.#month ? this.#month : 0
         this.#year = this.#year ? this.#year : 0
-        this.value = ''
       }
     } else {
       this.#day = this.#day ? this.#day : 0
       this.#month = this.#month ? this.#month : 0
       this.#year = this.#year ? this.#year : 0
-      this.value = ''
     }
-    this.updateInputs()
+    this.dayInput.value = `${this.#day ? this.#day : ''}`
+    this.monthInput.value = `${this.#month ? this.#month : ''}`
+    this.yearInput.value = `${this.#year ? this.#year : ''}`
     return this.createDateString()
   }
 
@@ -563,13 +585,13 @@ class WCDateInput extends HTMLElement {
    * @returns {Date}
    */
   get value() {
-    this.populateDate()
+    return this.populateDate()
   }
 
   set value(newValue) {
     if(this.getAttribute('value') !== newValue) {
       this.setAttribute('value', newValue)
-      this.internals.setFormValue(newValue)
+      this.internals.setFormValue(newValue, this.value)
       if(!newValue && this.required) {
         const errorWarning = this.dataset.valueMissing ?? 'Please enter a date.'
         this.internals.setValidity({valueMissing: true}, errorWarning, !this.#day ? this.dayInput : !this.#month ? this.monthInput : this.yearInput)
@@ -642,19 +664,19 @@ class WCDateInput extends HTMLElement {
   }
 
   get dayText() {
-    return this.hasAttribute('day-text') ? this.getAttribute('day-text') : this.#dayText
+    return this.dataset.dayText ?? this.#dayText
   }
 
   get monthText() {
-    return this.hasAttribute('month-text') ? this.getAttribute('month-text') : this.#monthText
+    return this.dataset.monthText ?? this.#monthText
   }
 
   get yearText() {
-    return this.hasAttribute('year-text') ? this.getAttribute('year-text') : this.#yearText
+    return this.dataset.yearText ?? this.#yearText
   }
 
   get errorText() {
-    return this.dataset.errorText ? this.dataset.errorText : null
+    return this.dataset.errorText ?? null
   }
 
   get required() {
