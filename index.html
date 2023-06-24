@@ -181,6 +181,10 @@
                        id="example_012_field"></wc-date-input>
         <br/>
         <p>Validation can be externally controlled by setting the <code>data-error-text</code> attribute, this is useful if you want to control the validity outside the component (here we're setting it to <code id="example_012_field_error_text">Please enter your date of birth</code>).</p>
+        <p>This is the code within this page, to remove the externally added validation, simply enter a valid date. One removed it can be added again by removing a valid date on the component:</p>
+        <img src="/beautify-picture.webp"
+             alt="Example 012 code"
+             style="width: 100%; max-width: 720px;"/>
       </div>
       <hr>
       <div>
@@ -256,14 +260,23 @@
             language = 'english'
             example_012_field.setAttribute('data-error-text', 'Please enter your date of birth')
             example_012_field_error_text.innerText = 'Please enter your date of birth'
+            example_012_field.setAttribute('data-day-text', 'Day')
+            example_012_field.setAttribute('data-month-text', 'Month')
+            example_012_field.setAttribute('data-year-text', 'Year')
           } else if(language === 'english') {
             language = 'german'
             example_012_field.setAttribute('data-error-text', 'Veuillez entrer votre date de naissance')
             example_012_field_error_text.innerText = 'Veuillez entrer votre date de naissance'
+            example_012_field.setAttribute('data-day-text', 'Jour')
+            example_012_field.setAttribute('data-month-text', 'Mois')
+            example_012_field.setAttribute('data-year-text', 'Année')
           } else {
             language = 'french'
             example_012_field.setAttribute('data-error-text', 'Bitte geben Sie Ihr Geburtsdatum ein')
             example_012_field_error_text.innerText = 'Bitte geben Sie Ihr Geburtsdatum ein'
+            example_012_field.setAttribute('data-day-text', 'Tag')
+            example_012_field.setAttribute('data-month-text', 'Monat')
+            example_012_field.setAttribute('data-year-text', 'Jahr')
           }
         }
 
@@ -282,7 +295,6 @@
             }
           }
         })
-
       })()
     </script>
   </body>
