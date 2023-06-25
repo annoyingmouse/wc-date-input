@@ -1,6 +1,6 @@
 {
     "name": "@annoyingmouse/wc-date-input",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "This web component creates a configurable date input similar to that suggested by the UK Government.",
     "main": "wc-date-input.js",
     "scripts": {
