@@ -25,6 +25,7 @@ class WCDateInput extends HTMLElement {
   }
 
   static formAssociated = true
+  
   constructor() {
     super()
     this.internals = this.attachInternals()
