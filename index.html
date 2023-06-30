@@ -222,8 +222,9 @@
       <hr>
       <button type="submit">Submit</button>
     </form>
-    <script type="module" src="wc-date-input.js"></script>
+    <script type="module" src="./dist/wc-date-input.min.js"></script>
     <script>
+      
       const getRamdomDateInLastYear = () => {
         const start = new Date().getTime() - (1000 * 60 * 60 * 24 * 365)
         const end = new Date().getTime()
@@ -233,7 +234,6 @@
         const d = ('0' + newDate.getDate()).slice(-2)
         return `${y}-${m}-${d}`
       }
-
 
       (() => {
         
@@ -257,7 +257,6 @@
           const data = Object.fromEntries(formData.entries())
           console.log(data, formValidity)
         })
-
         
         let language = 'german'
         const changeLanguage = () => {
@@ -281,6 +280,7 @@
           example_002_field.value = newDate
           example_002_field_value.innerText = newDate
         }
+        
         setInterval(changeLanguage, 2000)
         
         const changeErrorText = () => {
@@ -348,6 +348,7 @@
             }
           }
         })
+        
       })()
     </script>
   </body>
