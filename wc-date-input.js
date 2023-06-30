@@ -248,11 +248,29 @@ class WCDateInput extends HTMLElement {
       case 'min':
         if(oldValue !== newValue) {
           this.min = newValue !== null ? newValue : null
+          if(this.min) {
+            if(new Date(this.value).getTime() <= this.min.getTime()) {
+              this.value = ''
+              this.#day = 0
+              this.#month = 0
+              this.#year = 0
+              this.populateDate()
+            }
+          }
         }
         break
       case 'max':
         if(oldValue !== newValue) {
           this.max = newValue !== null ? newValue : null
+          if(this.max) {
+            if(new Date(this.value).getTime() >= this.max.getTime()) {
+              this.value = ''
+              this.#day = 0
+              this.#month = 0
+              this.#year = 0
+              this.populateDate()
+            }
+          }
         }
         break
       case 'data-day-text':

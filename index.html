@@ -196,6 +196,30 @@
         <p>Removing externally controlled validation is accomplished by emptying or removing the <code>data-error-text</code> attribute.</p>
       </div>
       <hr>
+      <div>
+        <label for="example_014_field">Example 014</label>
+        <wc-date-input name="example_014_field"
+                       value="2020-01-01"
+                       min="2019-12-31"
+                       id="example_014_field"></wc-date-input>
+        <br/>
+        <p>When <code>min</code> is set programatically the <code>value</code> is checked for validity.</p>
+        <p>Set value to <code>2020-01-01</code> then change min value <code>2020-01-02</code> (initially set to <code>2019-12-31</code>), then reset.</p>
+        <p>Current <code>min</code> is set to <code id="example_014_field_min">2019-12-31</code>.</p>
+      </div>
+      <hr>
+      <div>
+        <label for="example_015_field">Example 015</label>
+        <wc-date-input name="example_015_field"
+                       value="2020-01-01"
+                       max="2020-01-02"
+                       id="example_015_field"></wc-date-input>
+        <br/>
+        <p>When <code>max</code> is set programatically the <code>value</code> is checked for validity.</p>
+        <p>Set value to <code>2020-01-01</code> then change max value <code>2019-12-31</code> (initially set to <code>2020-01-02</code>), then reset.</p>
+        <p>Current <code>max</code> is set to <code id="example_015_field_max">2020-01-02</code>.</p>
+      </div>
+      <hr>
       <button type="submit">Submit</button>
     </form>
     <script type="module" src="wc-date-input.js"></script>
@@ -218,6 +242,10 @@
         const example_002_field_value = document.getElementById('example_002_field_value')
         const example_012_field = document.getElementById('example_012_field')
         const example_012_field_error_text = document.getElementById('example_012_field_error_text')
+        const example_014_field = document.getElementById('example_014_field')
+        const example_014_field_min = document.getElementById('example_014_field_min')
+        const example_015_field = document.getElementById('example_015_field')
+        const example_015_field_min = document.getElementById('example_015_field_min')
 
         /**
          * Hijack the `submit` and display field values in the console
@@ -280,8 +308,33 @@
           }
         }
 
-        let changeErrorTextInterval = setInterval(changeErrorText, 2000)
+        let changeErrorTextInterval = setInterval(changeErrorText, 5000)
         let isChangeErrorTextIntervalRunning = true
+
+        const changeMinAndMaxValue = () => {
+          if(example_014_field.getAttribute('min') === "2020-01-02") {
+            example_014_field.setAttribute('min', "2019-12-31")
+            example_014_field_min.innerText = "2019-12-31"
+            setTimeout(() => {
+              example_014_field.value = "2020-01-01"
+            }, 2000)
+          } else {
+            example_014_field.setAttribute('min', "2020-01-02")
+            example_014_field_min.innerText = "2020-01-02"
+          }
+          if(example_015_field.getAttribute('max') === "2020-01-02") {
+            example_015_field.setAttribute('max', "2019-12-31")
+            example_015_field_max.innerText = "2019-12-31"
+          } else {
+            example_015_field.setAttribute('max', "2020-01-02")
+            example_015_field_max.innerText = "2020-01-02"
+            setTimeout(() => {
+              example_015_field.value = "2020-01-01"
+            }, 2000)
+          }
+        }
+
+        setInterval(changeMinAndMaxValue, 5000)
 
         example_012_field.addEventListener('change', function(e){
           if(e.target.value){
