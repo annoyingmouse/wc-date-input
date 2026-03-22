@@ -238,6 +238,18 @@
         <p>The component fires a <code>change</code> event (bubbles) whenever its value changes. Current value: <code id="example_017_field_value">&#x2014;</code></p>
       </div>
       <hr>
+            <div>
+        <label for="example_018_field">Example 018 (<code>data-day-autocomplete</code>, <code>data-month-autocomplete</code> &amp; <code>data-year-autocomplete</code>)</label>
+        <wc-date-input name="example_018_field"
+                       id="example_018_field"
+                       data-label="Date of birth"
+                       data-day-autocomplete="bday-day"
+                       data-month-autocomplete="bday-month"
+                       data-year-autocomplete="bday-year"></wc-date-input>
+        <br/>
+        <p>Setting <code>autocomplete</code> on each sub-field enables browser autofill and satisfies WCAG 1.3.5 (Identify Input Purpose). Use <code>bday-day</code>, <code>bday-month</code>, and <code>bday-year</code> for date-of-birth fields.</p>
+      </div>
+      <hr>
       <button type="submit">Submit</button>
     </form>
     <script type="module" src="./wc-date-input.js"></script>

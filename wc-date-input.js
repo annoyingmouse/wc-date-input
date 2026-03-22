@@ -8,7 +8,11 @@ class WCDateInput extends HTMLElement {
   #dayText = 'Day'
   #monthText = 'Month'
   #yearText = 'Year'
-  
+  #hintText = 'Focus moves automatically as you complete each field.'
+  #dayAutocomplete = 'off'
+  #monthAutocomplete = 'off'
+  #yearAutocomplete = 'off'
+
   static get observedAttributes() {
     return [
       'value',
@@ -21,6 +25,10 @@ class WCDateInput extends HTMLElement {
       'data-day-text',
       'data-month-text',
       'data-year-text',
+      'data-hint-text',
+      'data-day-autocomplete',
+      'data-month-autocomplete',
+      'data-year-autocomplete',
       'data-error-text'
     ]
   }
@@ -47,6 +55,8 @@ class WCDateInput extends HTMLElement {
     this.forDay = this.shadow.querySelector('label[for="day"]')
     this.forMonth = this.shadow.querySelector('label[for="month"]')
     this.forYear = this.shadow.querySelector('label[for="year"]')
+    this.hintElement = this.shadow.querySelector('#auto-advance-hint')
+    this.liveAnnouncer = this.shadow.querySelector('#live-announcer')
   }
 
   connectedCallback() {
@@ -173,6 +183,17 @@ class WCDateInput extends HTMLElement {
   get css() {
     return `
       <style>
+        .visually-hidden {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          margin: 0;
+          padding: 0;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
+        }
         fieldset {
           border: none;
           margin: 0;
@@ -267,6 +288,7 @@ class WCDateInput extends HTMLElement {
     return `
       <fieldset class="date-input can-have-user-error${this.errorText ? ' user-error' : ''}">
         <legend>${this.dataset.label ?? ''}</legend>
+        <span id="auto-advance-hint" class="visually-hidden">${this.hintText}</span>
         <div class="form-group-holder">
           <div class="form-group">
             <label for="day"
@@ -282,8 +304,9 @@ class WCDateInput extends HTMLElement {
                    ${this.readonly ? 'readonly' : ''}
                    value="${this.#day ? this.#day : ''}"
                    inputmode="numeric"
+                   autocomplete="${this.dayAutocomplete}"
                    data-form-type="date,day"
-                   aria-describedby="error-message"
+                   aria-describedby="auto-advance-hint error-message"
                    aria-required="${this.required ? 'true' : 'false'}"
                    aria-invalid="false" />
           </div>
@@ -296,13 +319,14 @@ class WCDateInput extends HTMLElement {
                    class="can-have-user-error${this.errorText ? ' user-error' : ''}"
                    name="month"
                    type="text"
-                   pattern="^((0[1-9])|(1[0-2]))$"
+                   pattern="^(0?[1-9]|1[0-2])$"
                    ${this.disabled ? 'disabled' : ''}
                    ${this.readonly ? 'readonly' : ''}
                    value="${this.#month ? this.#month : ''}"
                    inputmode="numeric"
+                   autocomplete="${this.monthAutocomplete}"
                    data-form-type="date,month"
-                   aria-describedby="error-message"
+                   aria-describedby="auto-advance-hint error-message"
                    aria-required="${this.required ? 'true' : 'false'}"
                    aria-invalid="false" />
           </div>
@@ -320,15 +344,17 @@ class WCDateInput extends HTMLElement {
                    ${this.readonly ? 'readonly' : ''}
                    value="${this.#year ? this.#year : ''}"
                    inputmode="numeric"
+                   autocomplete="${this.yearAutocomplete}"
                    data-form-type="date,year"
-                   aria-describedby="error-message"
+                   aria-describedby="auto-advance-hint error-message"
                    aria-required="${this.required ? 'true' : 'false'}"
                    aria-invalid="false" />
           </div>
         </div>
-        <span class="can-have-user-error${this.errorText ? ' user-error' : ''}" aria-live="polite">
+        <span class="can-have-user-error${this.errorText ? ' user-error' : ''}">
           <strong id="error-message">${this.errorText ?? ''}</strong>
         </span>
+        <span id="live-announcer" class="visually-hidden" aria-live="polite" aria-atomic="true">${this.errorText ?? ''}</span>
       </fieldset>
     `
   }
@@ -436,6 +462,26 @@ class WCDateInput extends HTMLElement {
           this.forYear.innerText = this.yearText
         }
         break
+      case 'data-hint-text':
+        if(oldValue !== newValue) {
+          this.hintElement.innerText = this.hintText
+        }
+        break
+      case 'data-day-autocomplete':
+        if(oldValue !== newValue) {
+          this.dayInput.setAttribute('autocomplete', this.dayAutocomplete)
+        }
+        break
+      case 'data-month-autocomplete':
+        if(oldValue !== newValue) {
+          this.monthInput.setAttribute('autocomplete', this.monthAutocomplete)
+        }
+        break
+      case 'data-year-autocomplete':
+        if(oldValue !== newValue) {
+          this.yearInput.setAttribute('autocomplete', this.yearAutocomplete)
+        }
+        break
       case 'data-error-text':
         if(oldValue !== newValue) {
           if(newValue) {
@@ -449,6 +495,7 @@ class WCDateInput extends HTMLElement {
               this.errorMessageElement.innerText = ''
             })
           }
+          this.liveAnnouncer.innerText = newValue ?? ''
         }
     }
   }
@@ -832,6 +879,22 @@ class WCDateInput extends HTMLElement {
 
   get yearText() {
     return this.dataset.yearText ?? this.#yearText
+  }
+
+  get hintText() {
+    return this.dataset.hintText ?? this.#hintText
+  }
+
+  get dayAutocomplete() {
+    return this.dataset.dayAutocomplete ?? this.#dayAutocomplete
+  }
+
+  get monthAutocomplete() {
+    return this.dataset.monthAutocomplete ?? this.#monthAutocomplete
+  }
+
+  get yearAutocomplete() {
+    return this.dataset.yearAutocomplete ?? this.#yearAutocomplete
   }
 
   get errorText() {

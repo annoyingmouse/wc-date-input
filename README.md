@@ -26,6 +26,18 @@ If you're anything like me, you'll find scrolling through months looking for you
 * Adding `data-year-text` allows you to change the label above the year input.
 * Adding `data-value-missing` allows you to customise the validation message if `required` is set.
 * Adding `data-error-text` allows you to use external validation to set the field as invalid.
+* Adding `data-hint-text` overrides the default screen-reader hint (*"Focus moves automatically as you complete each field."*) — useful for internationalisation.
+* Adding `data-day-autocomplete`, `data-month-autocomplete`, and `data-year-autocomplete` sets the `autocomplete` attribute on each sub-field (default `off`). For a date-of-birth field use `bday-day`, `bday-month`, and `bday-year` respectively.
+
+```html
+<wc-date-input
+  name="dob"
+  data-label="Date of birth"
+  data-day-autocomplete="bday-day"
+  data-month-autocomplete="bday-month"
+  data-year-autocomplete="bday-year"
+></wc-date-input>
+```
 
 ## Events
 
@@ -44,6 +56,8 @@ document.querySelector('wc-date-input').addEventListener('change', (e) => {
 | ArrowUp / ArrowDown | Increment or decrement the focused field (day, month, or year). Day and month wrap; year clamps to `min`/`max`. |
 | ArrowRight | Move focus to the next field when the cursor is at the end of the current field. |
 | ArrowLeft | Move focus to the previous field when the cursor is at the start of the current field. |
+| Backspace (on empty field) | Move focus to the previous field. |
+| Typing digits | Focus advances automatically once a field is complete (e.g. day ≥ 10, or a single digit that cannot start a valid two-digit value). |
 
 ## License
 
