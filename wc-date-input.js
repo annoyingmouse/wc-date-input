@@ -17,6 +17,7 @@ class WCDateInput extends HTMLElement {
       'disabled',
       'readonly',
       'required',
+      'data-label',
       'data-day-text',
       'data-month-text',
       'data-year-text',
@@ -37,18 +38,20 @@ class WCDateInput extends HTMLElement {
     this.pattern = new RegExp("^\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])$")
     this.warnedMin = false
     this.warnedMax = false
-    this.disabled = false
     this.dayInput = this.shadow.querySelector('#day')
     this.monthInput = this.shadow.querySelector('#month')
     this.yearInput = this.shadow.querySelector('#year')
     this.errorTextElements = this.shadow.querySelectorAll('.can-have-user-error')
     this.errorMessageElement = this.shadow.querySelector('#error-message')
+    this.legendElement = this.shadow.querySelector('legend')
     this.forDay = this.shadow.querySelector('label[for="day"]')
     this.forMonth = this.shadow.querySelector('label[for="month"]')
     this.forYear = this.shadow.querySelector('label[for="year"]')
   }
 
   connectedCallback() {
+    this.internals.setFormValue(this.createDateString())
+
     this.dayInput.addEventListener('blur', () => {
       this.updateDayValue()
     })
@@ -58,6 +61,97 @@ class WCDateInput extends HTMLElement {
     this.yearInput.addEventListener('blur', () => {
       this.updateYearValue()
     })
+
+    this.dayInput.addEventListener('input', () => {
+      const val = this.dayInput.value
+      const num = Number(val)
+      if ((val.length === 1 && num >= 4) || (val.length === 2 && num >= 1 && num <= 31)) {
+        this.monthInput.focus()
+        this.monthInput.select()
+      }
+    })
+
+    this.monthInput.addEventListener('input', () => {
+      const val = this.monthInput.value
+      const num = Number(val)
+      if ((val.length === 1 && num >= 2) || (val.length === 2 && num >= 1 && num <= 12)) {
+        this.yearInput.focus()
+        this.yearInput.select()
+      }
+    })
+
+    this.yearInput.addEventListener('input', () => {
+      if (this.yearInput.value.length === 4) {
+        this.updateYearValue()
+      }
+    })
+
+    this.dayInput.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' && this.dayInput.selectionStart === this.dayInput.value.length) {
+        e.preventDefault()
+        this.monthInput.focus()
+        this.monthInput.setSelectionRange(0, 0)
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        e.preventDefault()
+        const maxDay = this.getMaxDayForMonth(this.#month, this.#year)
+        const current = Number(this.dayInput.value)
+        if (e.key === 'ArrowUp') {
+          this.dayInput.value = (!current || current >= maxDay) ? 1 : current + 1
+        } else {
+          this.dayInput.value = (!current || current <= 1) ? maxDay : current - 1
+        }
+        this.updateDayValue()
+      }
+    })
+
+    this.monthInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && this.monthInput.value === '') {
+        e.preventDefault()
+        this.dayInput.focus()
+        this.dayInput.setSelectionRange(this.dayInput.value.length, this.dayInput.value.length)
+      } else if (e.key === 'ArrowLeft' && this.monthInput.selectionStart === 0) {
+        e.preventDefault()
+        this.dayInput.focus()
+        this.dayInput.setSelectionRange(this.dayInput.value.length, this.dayInput.value.length)
+      } else if (e.key === 'ArrowRight' && this.monthInput.selectionStart === this.monthInput.value.length) {
+        e.preventDefault()
+        this.yearInput.focus()
+        this.yearInput.setSelectionRange(0, 0)
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        e.preventDefault()
+        const current = Number(this.monthInput.value)
+        if (e.key === 'ArrowUp') {
+          this.monthInput.value = (!current || current >= 12) ? 1 : current + 1
+        } else {
+          this.monthInput.value = (!current || current <= 1) ? 12 : current - 1
+        }
+        this.updateMonthValue()
+      }
+    })
+
+    this.yearInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && this.yearInput.value === '') {
+        e.preventDefault()
+        this.monthInput.focus()
+        this.monthInput.setSelectionRange(this.monthInput.value.length, this.monthInput.value.length)
+      } else if (e.key === 'ArrowLeft' && this.yearInput.selectionStart === 0) {
+        e.preventDefault()
+        this.monthInput.focus()
+        this.monthInput.setSelectionRange(this.monthInput.value.length, this.monthInput.value.length)
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        e.preventDefault()
+        const minYear = this.min ? this.min.getFullYear() : 1
+        const maxYear = this.max ? this.max.getFullYear() : 9999
+        const current = Number(this.yearInput.value) || new Date().getFullYear()
+        if (e.key === 'ArrowUp') {
+          this.yearInput.value = Math.min(current + 1, maxYear)
+        } else {
+          this.yearInput.value = Math.max(current - 1, minYear)
+        }
+        this.updateYearValue()
+      }
+    })
+
     this.updateInputs()
   }
 
@@ -79,6 +173,20 @@ class WCDateInput extends HTMLElement {
   get css() {
     return `
       <style>
+        fieldset {
+          border: none;
+          margin: 0;
+          padding: 0;
+          min-width: 0;
+        }
+        legend {
+          padding: 0;
+          font-weight: bold;
+          margin-bottom: .25em;
+        }
+        legend:empty {
+          display: none;
+        }
         .date-input {
           font-family: arial, sans-serif;
           position: relative;
@@ -98,9 +206,9 @@ class WCDateInput extends HTMLElement {
           position: absolute;
         }
         .form-group-holder {
-          display: grid; 
+          display: grid;
           grid-template-columns: 2.75em 2.75em 4em;
-          gap: 0% 1em; 
+          gap: 0% 1em;
         }
         .form-group {
           display: flex;
@@ -132,10 +240,10 @@ class WCDateInput extends HTMLElement {
           border-radius: 0;
         }
         input.user-error {
-          border-color: #D4352C;
+          border: 3px solid #D4352C;
         }
         input.error {
-          border-color: #D4352C;
+          border: 3px solid #D4352C;
         }
         input:focus {
           outline: .3rem solid #FFDD00;
@@ -157,7 +265,8 @@ class WCDateInput extends HTMLElement {
 
   get html() {
     return `
-      <div class="date-input can-have-user-error${this.errorText ? ' user-error' : ''}">
+      <fieldset class="date-input can-have-user-error${this.errorText ? ' user-error' : ''}">
+        <legend>${this.dataset.label ?? ''}</legend>
         <div class="form-group-holder">
           <div class="form-group">
             <label for="day"
@@ -165,37 +274,37 @@ class WCDateInput extends HTMLElement {
               ${this.dayText}
             </label>
             <input id="day"
-                   class="can-have-user-error${this.errorText ? ' user-error' : ''}" 
+                   class="can-have-user-error${this.errorText ? ' user-error' : ''}"
                    name="day"
                    type="text"
-                   min="1"
-                   max="31"
                    pattern="^((0?[1-9])|([12][0-9])|(3[01]))$"
                    ${this.disabled ? 'disabled' : ''}
                    ${this.readonly ? 'readonly' : ''}
                    value="${this.#day ? this.#day : ''}"
                    inputmode="numeric"
                    data-form-type="date,day"
-                   tabindex="0" />
+                   aria-describedby="error-message"
+                   aria-required="${this.required ? 'true' : 'false'}"
+                   aria-invalid="false" />
           </div>
           <div class="form-group">
             <label for="month"
-                   class="can-have-user-error${this.errorText ? ' user-error' : ''}"> 
+                   class="can-have-user-error${this.errorText ? ' user-error' : ''}">
               ${this.monthText}
             </label>
             <input id="month"
                    class="can-have-user-error${this.errorText ? ' user-error' : ''}"
                    name="month"
                    type="text"
-                   min="1"
-                   max="12"
                    pattern="^((0[1-9])|(1[0-2]))$"
                    ${this.disabled ? 'disabled' : ''}
                    ${this.readonly ? 'readonly' : ''}
                    value="${this.#month ? this.#month : ''}"
                    inputmode="numeric"
                    data-form-type="date,month"
-                   tabindex="0" />
+                   aria-describedby="error-message"
+                   aria-required="${this.required ? 'true' : 'false'}"
+                   aria-invalid="false" />
           </div>
           <div class="form-group year-input">
             <label for="year"
@@ -210,15 +319,17 @@ class WCDateInput extends HTMLElement {
                    ${this.disabled ? 'disabled' : ''}
                    ${this.readonly ? 'readonly' : ''}
                    value="${this.#year ? this.#year : ''}"
-                   inputmode="numeric" 
+                   inputmode="numeric"
                    data-form-type="date,year"
-                   tabindex="0" />
+                   aria-describedby="error-message"
+                   aria-required="${this.required ? 'true' : 'false'}"
+                   aria-invalid="false" />
           </div>
         </div>
-        <span class="can-have-user-error${this.errorText ? ' user-error' : ''}">
-          <strong id="error-message">${this.errorText}</strong>
+        <span class="can-have-user-error${this.errorText ? ' user-error' : ''}" aria-live="polite">
+          <strong id="error-message">${this.errorText ?? ''}</strong>
         </span>
-      </div>
+      </fieldset>
     `
   }
 
@@ -227,6 +338,14 @@ class WCDateInput extends HTMLElement {
       case 'required':
         if(oldValue !== newValue) {
           this.required = newValue !== null
+          const isRequired = newValue !== null
+          const dateStringForRequired = this.createDateString()
+          if (!dateStringForRequired && isRequired) {
+            const errorWarning = this.dataset.valueMissing ?? 'Please enter a date.'
+            this.internals.setValidity({valueMissing: true}, errorWarning, this.dayInput)
+          } else {
+            this.internals.setValidity({})
+          }
         }
         break
       case 'disabled':
@@ -241,8 +360,32 @@ class WCDateInput extends HTMLElement {
         break
       case 'value':
         if(oldValue !== newValue) {
-          this.value = newValue
           this.populateDate()
+          const dateString = this.createDateString()
+          this.internals.setFormValue(dateString)
+          if (!dateString && this.required) {
+            const errorWarning = this.dataset.valueMissing ?? 'Please enter a date.'
+            this.internals.setValidity(
+              {valueMissing: true},
+              errorWarning,
+              !this.#day ? this.dayInput : !this.#month ? this.monthInput : this.yearInput
+            )
+            if (!this.#day) {
+              this.dayInput.classList.add('error')
+              this.dayInput.setAttribute('aria-invalid', 'true')
+            }
+            if (!this.#month) {
+              this.monthInput.classList.add('error')
+              this.monthInput.setAttribute('aria-invalid', 'true')
+            }
+            if (!this.#year) {
+              this.yearInput.classList.add('error')
+              this.yearInput.setAttribute('aria-invalid', 'true')
+            }
+          } else {
+            this.internals.setValidity({})
+          }
+          this.dispatchEvent(new Event('change', {bubbles: true}))
         }
         break
       case 'min':
@@ -250,10 +393,10 @@ class WCDateInput extends HTMLElement {
           this.min = newValue !== null ? newValue : null
           if(this.min) {
             if(new Date(this.value).getTime() <= this.min.getTime()) {
-              this.value = ''
               this.#day = 0
               this.#month = 0
               this.#year = 0
+              this.value = ''
               this.populateDate()
             }
           }
@@ -264,13 +407,18 @@ class WCDateInput extends HTMLElement {
           this.max = newValue !== null ? newValue : null
           if(this.max) {
             if(new Date(this.value).getTime() >= this.max.getTime()) {
-              this.value = ''
               this.#day = 0
               this.#month = 0
               this.#year = 0
+              this.value = ''
               this.populateDate()
             }
           }
+        }
+        break
+      case 'data-label':
+        if(oldValue !== newValue) {
+          this.legendElement.textContent = newValue ?? ''
         }
         break
       case 'data-day-text':
@@ -310,6 +458,12 @@ class WCDateInput extends HTMLElement {
     return (year % 4 === 0 && year % 100 !== 0 || year % 400 === 0)
   }
 
+  getMaxDayForMonth(month, year) {
+    if(!month) return 31
+    if(month === 2) return (!year || this.isLeapYear(year)) ? 29 : 28
+    return [4, 6, 9, 11].includes(month) ? 30 : 31
+  }
+
   createDateString() {
     if(this.#year && this.#month && this.#day) {
       return `${this.#year.toString().padStart(4, '0')}-${this.#month.toString().padStart(2, '0')}-${this.#day.toString().padStart(2, '0')}`
@@ -326,6 +480,7 @@ class WCDateInput extends HTMLElement {
       this.#day = value
       this.dayInput.value = `${value}`
       this.dayInput.classList.remove('error')
+      this.dayInput.setAttribute('aria-invalid', 'false')
     }
   }
 
@@ -337,6 +492,7 @@ class WCDateInput extends HTMLElement {
       this.#month = value
       this.monthInput.value = `${value}`
       this.monthInput.classList.remove('error')
+      this.monthInput.setAttribute('aria-invalid', 'false')
     }
   }
 
@@ -348,6 +504,7 @@ class WCDateInput extends HTMLElement {
       this.#year = value
       this.yearInput.value = `${value}`
       this.yearInput.classList.remove('error')
+      this.yearInput.setAttribute('aria-invalid', 'false')
     }
   }
 
@@ -588,9 +745,11 @@ class WCDateInput extends HTMLElement {
         this.#year = this.#year ? this.#year : 0
       }
     } else {
-      this.#day = this.#day ? this.#day : 0
-      this.#month = this.#month ? this.#month : 0
-      this.#year = this.#year ? this.#year : 0
+      if (!this.hasAttribute('value')) {
+        this.#day = 0
+        this.#month = 0
+        this.#year = 0
+      }
     }
     this.dayInput.value = `${this.#day ? this.#day : ''}`
     this.monthInput.value = `${this.#month ? this.#month : ''}`
@@ -610,25 +769,6 @@ class WCDateInput extends HTMLElement {
   set value(newValue) {
     if(this.getAttribute('value') !== newValue) {
       this.setAttribute('value', newValue)
-      this.internals.setFormValue(newValue, this.value)
-      if(!newValue && this.required) {
-        const errorWarning = this.dataset.valueMissing ?? 'Please enter a date.'
-        this.internals.setValidity({valueMissing: true}, errorWarning, !this.#day ? this.dayInput : !this.#month ? this.monthInput : this.yearInput)
-        if(!this.#day) {
-          this.dayInput.classList.add('error')
-        }
-        if(!this.#month) {
-          this.monthInput.classList.add('error')
-        }
-        if(!this.#year) {
-          this.yearInput.classList.add('error')
-        }
-      } else {
-        this.internals.setValidity({})
-      }
-      this.dispatchEvent(new Event('change', {
-        bubbles: true
-      }))
     }
   }
 
@@ -705,9 +845,19 @@ class WCDateInput extends HTMLElement {
   set required(value) {
     if (value === 'true' || value === true) {
       this.setAttribute('required', 'true')
+      if (this.dayInput) {
+        this.dayInput.setAttribute('aria-required', 'true')
+        this.monthInput.setAttribute('aria-required', 'true')
+        this.yearInput.setAttribute('aria-required', 'true')
+      }
     }
     if (value === 'false' || value === false) {
       this.removeAttribute('required')
+      if (this.dayInput) {
+        this.dayInput.setAttribute('aria-required', 'false')
+        this.monthInput.setAttribute('aria-required', 'false')
+        this.yearInput.setAttribute('aria-required', 'false')
+      }
     }
   }
 
@@ -718,9 +868,19 @@ class WCDateInput extends HTMLElement {
   set readonly(value) {
     if (value === 'true' || value === true) {
       this.setAttribute('readonly', 'true')
+      if (this.dayInput) {
+        this.dayInput.readOnly = true
+        this.monthInput.readOnly = true
+        this.yearInput.readOnly = true
+      }
     }
     if (value === 'false' || value === false) {
       this.removeAttribute('readonly')
+      if (this.dayInput) {
+        this.dayInput.readOnly = false
+        this.monthInput.readOnly = false
+        this.yearInput.readOnly = false
+      }
     }
   }
 
@@ -731,9 +891,19 @@ class WCDateInput extends HTMLElement {
   set disabled(value) {
     if (value === 'true' || value === true) {
       this.setAttribute('disabled', 'true')
+      if (this.dayInput) {
+        this.dayInput.disabled = true
+        this.monthInput.disabled = true
+        this.yearInput.disabled = true
+      }
     }
     if (value === 'false' || value === false) {
       this.removeAttribute('disabled')
+      if (this.dayInput) {
+        this.dayInput.disabled = false
+        this.monthInput.disabled = false
+        this.yearInput.disabled = false
+      }
     }
   }
 
