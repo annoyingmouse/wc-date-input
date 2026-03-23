@@ -29,7 +29,8 @@ class WCDateInput extends HTMLElement {
       'data-day-autocomplete',
       'data-month-autocomplete',
       'data-year-autocomplete',
-      'data-error-text'
+      'data-error-text',
+      'data-today-button-text',
     ]
   }
 
@@ -57,6 +58,7 @@ class WCDateInput extends HTMLElement {
     this.forYear = this.shadow.querySelector('label[for="year"]')
     this.hintElement = this.shadow.querySelector('#auto-advance-hint')
     this.liveAnnouncer = this.shadow.querySelector('#live-announcer')
+    this.todayButton = this.shadow.querySelector('#today-button')
   }
 
   connectedCallback() {
@@ -160,6 +162,14 @@ class WCDateInput extends HTMLElement {
         }
         this.updateYearValue()
       }
+    })
+
+    this.todayButton.addEventListener('click', () => {
+      const today = new Date()
+      const y = today.getFullYear()
+      const m = String(today.getMonth() + 1).padStart(2, '0')
+      const d = String(today.getDate()).padStart(2, '0')
+      this.value = `${y}-${m}-${d}`
     })
 
     this.updateInputs()
@@ -280,6 +290,43 @@ class WCDateInput extends HTMLElement {
           font-size: .85em;
           margin-top: .5em;
         }
+        button.today {
+          display: none;
+          position: relative;
+          margin-top: .75em;
+          padding: 8px 10px 7px;
+          border: 2px solid transparent;
+          border-radius: 0;
+          background-color: #f3f2f1;
+          box-shadow: 0 2px 0 #929191;
+          color: #0b0c0c;
+          font-family: arial, sans-serif;
+          font-size: 1rem;
+          font-weight: bold;
+          line-height: 1.1875;
+          cursor: pointer;
+          -webkit-appearance: none;
+          vertical-align: top;
+        }
+        button.today.visible {
+          display: inline-block;
+        }
+        button.today:hover {
+          background-color: #dbdad9;
+        }
+        button.today:focus {
+          outline: 3px solid #ffdd00;
+          outline-offset: 0;
+          box-shadow: 0 2px 0 #0b0c0c;
+        }
+        button.today:active {
+          top: 2px;
+          box-shadow: none;
+        }
+        button.today:disabled {
+          opacity: 0.5;
+          pointer-events: none;
+        }
       </style>
     `
   }
@@ -351,6 +398,10 @@ class WCDateInput extends HTMLElement {
                    aria-invalid="false" />
           </div>
         </div>
+        <button id="today-button"
+                type="button"
+                class="today${this.hasAttribute('data-today-button-text') ? ' visible' : ''}"
+                ${this.disabled || this.readonly ? 'disabled' : ''}>${this.dataset.todayButtonText || 'Use today\'s date'}</button>
         <span class="can-have-user-error${this.errorText ? ' user-error' : ''}">
           <strong id="error-message">${this.errorText ?? ''}</strong>
         </span>
@@ -496,6 +547,16 @@ class WCDateInput extends HTMLElement {
             })
           }
           this.liveAnnouncer.innerText = newValue ?? ''
+        }
+        break
+      case 'data-today-button-text':
+        if(oldValue !== newValue) {
+          if(newValue !== null) {
+            this.todayButton.textContent = newValue || 'Use today\'s date'
+            this.todayButton.classList.add('visible')
+          } else {
+            this.todayButton.classList.remove('visible')
+          }
         }
     }
   }
@@ -935,6 +996,7 @@ class WCDateInput extends HTMLElement {
         this.dayInput.readOnly = true
         this.monthInput.readOnly = true
         this.yearInput.readOnly = true
+        this.todayButton.disabled = true
       }
     }
     if (value === 'false' || value === false) {
@@ -943,6 +1005,7 @@ class WCDateInput extends HTMLElement {
         this.dayInput.readOnly = false
         this.monthInput.readOnly = false
         this.yearInput.readOnly = false
+        this.todayButton.disabled = this.disabled
       }
     }
   }
@@ -958,6 +1021,7 @@ class WCDateInput extends HTMLElement {
         this.dayInput.disabled = true
         this.monthInput.disabled = true
         this.yearInput.disabled = true
+        this.todayButton.disabled = true
       }
     }
     if (value === 'false' || value === false) {
@@ -966,6 +1030,7 @@ class WCDateInput extends HTMLElement {
         this.dayInput.disabled = false
         this.monthInput.disabled = false
         this.yearInput.disabled = false
+        this.todayButton.disabled = this.readonly
       }
     }
   }

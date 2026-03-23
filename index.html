@@ -51,6 +51,7 @@
       <li>Adding <code>data-year-text</code> allows you to change the label above the year input.</li>
       <li>Adding <code>data-value-missing</code> allows you to customise the validation message if <code>required</code> is set.</li>
       <li>Adding <code>data-error-text</code> allows you to use external validation to set the field as invalid.</li>
+      <li>Adding <code>data-today-button-text</code> shows a button that fills the inputs with today's date. The attribute value is used as the button label; if empty, defaults to <em>Use today's date</em>. The button is disabled when <code>disabled</code> or <code>readonly</code> is set.</li>
     </ul>
     <h2>Examples</h2>
     <h3>Plain input</h3>
@@ -248,6 +249,35 @@
                        data-year-autocomplete="bday-year"></wc-date-input>
         <br/>
         <p>Setting <code>autocomplete</code> on each sub-field enables browser autofill and satisfies WCAG 1.3.5 (Identify Input Purpose). Use <code>bday-day</code>, <code>bday-month</code>, and <code>bday-year</code> for date-of-birth fields.</p>
+      </div>
+      <hr>
+      <div>
+        <label for="example_019_field">Example 019 (<code>data-today-button-text</code>)</label>
+        <wc-date-input name="example_019_field"
+                       id="example_019_field"
+                       data-today-button-text="Use today's date"></wc-date-input>
+        <br/>
+        <p>Adding <code>data-today-button-text</code> shows a button that fills the inputs with today's date. The attribute value sets the button label; if empty, it defaults to <em>Use today's date</em>.</p>
+      </div>
+      <hr>
+      <div>
+        <label for="example_020_field">Example 020 (<code>data-today-button-text</code> with <code>disabled</code>)</label>
+        <wc-date-input name="example_020_field"
+                       id="example_020_field"
+                       data-today-button-text="Use today's date"
+                       disabled></wc-date-input>
+        <br/>
+        <p>The today button is disabled when the component has <code>disabled</code> set.</p>
+      </div>
+      <hr>
+      <div>
+        <label for="example_021_field">Example 021 (<code>data-today-button-text</code> with <code>readonly</code>)</label>
+        <wc-date-input name="example_021_field"
+                       id="example_021_field"
+                       data-today-button-text="Use today's date"
+                       readonly></wc-date-input>
+        <br/>
+        <p>The today button is disabled when the component has <code>readonly</code> set.</p>
       </div>
       <hr>
       <button type="submit">Submit</button>

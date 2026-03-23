@@ -439,3 +439,114 @@ describe('Backspace on empty field moves focus to previous field', () => {
     expect(el.value).to.equal('2025-03-15')
   })
 })
+
+// ─── data-today-button-text ──────────────────────────────────────────────────
+
+describe('data-today-button-text — visibility', () => {
+  it('button is hidden when attribute is absent', async () => {
+    const el = await fixture(html`<wc-date-input></wc-date-input>`)
+    const button = el.shadow.querySelector('#today-button')
+    expect(button.classList.contains('visible')).to.be.false
+  })
+
+  it('button is visible when attribute is present', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date"></wc-date-input>`)
+    const button = el.shadow.querySelector('#today-button')
+    expect(button.classList.contains('visible')).to.be.true
+  })
+
+  it('adding the attribute dynamically shows the button', async () => {
+    const el = await fixture(html`<wc-date-input></wc-date-input>`)
+    const button = el.shadow.querySelector('#today-button')
+    expect(button.classList.contains('visible')).to.be.false
+    el.setAttribute('data-today-button-text', 'Today')
+    expect(button.classList.contains('visible')).to.be.true
+  })
+
+  it('removing the attribute dynamically hides the button', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Today"></wc-date-input>`)
+    const button = el.shadow.querySelector('#today-button')
+    expect(button.classList.contains('visible')).to.be.true
+    el.removeAttribute('data-today-button-text')
+    expect(button.classList.contains('visible')).to.be.false
+  })
+})
+
+describe('data-today-button-text — label', () => {
+  it('shows the default label when attribute value is empty', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text=""></wc-date-input>`)
+    const button = el.shadow.querySelector('#today-button')
+    expect(button.textContent).to.equal("Use today's date")
+  })
+
+  it('shows custom text from the attribute value', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Set to today"></wc-date-input>`)
+    const button = el.shadow.querySelector('#today-button')
+    expect(button.textContent).to.equal('Set to today')
+  })
+
+  it('updates the button label when the attribute value changes', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Today"></wc-date-input>`)
+    const button = el.shadow.querySelector('#today-button')
+    el.setAttribute('data-today-button-text', 'Set date to today')
+    expect(button.textContent).to.equal('Set date to today')
+  })
+})
+
+describe('data-today-button-text — click behaviour', () => {
+  const todayString = () => {
+    const t = new Date()
+    return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
+  }
+
+  it("sets the component value to today's date", async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date"></wc-date-input>`)
+    el.shadow.querySelector('#today-button').click()
+    expect(el.value).to.equal(todayString())
+  })
+
+  it('overwrites an existing value with today\'s date', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date" value="2000-01-01"></wc-date-input>`)
+    el.shadow.querySelector('#today-button').click()
+    expect(el.value).to.equal(todayString())
+  })
+
+  it('fires a change event when clicked', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date"></wc-date-input>`)
+    let fired = false
+    el.addEventListener('change', () => { fired = true })
+    el.shadow.querySelector('#today-button').click()
+    expect(fired).to.be.true
+  })
+})
+
+describe('data-today-button-text — disabled and readonly', () => {
+  it('button is disabled when the component is disabled', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date" disabled></wc-date-input>`)
+    expect(el.shadow.querySelector('#today-button').disabled).to.be.true
+  })
+
+  it('button is enabled after disabled is removed', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date" disabled></wc-date-input>`)
+    el.disabled = false
+    expect(el.shadow.querySelector('#today-button').disabled).to.be.false
+  })
+
+  it('button is disabled when the component is readonly', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date" readonly></wc-date-input>`)
+    expect(el.shadow.querySelector('#today-button').disabled).to.be.true
+  })
+
+  it('button is enabled after readonly is removed', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date" readonly></wc-date-input>`)
+    el.readonly = false
+    expect(el.shadow.querySelector('#today-button').disabled).to.be.false
+  })
+
+  it('button does not update value when disabled', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date" disabled value="2000-01-01"></wc-date-input>`)
+    // disabled buttons do not fire click events
+    el.shadow.querySelector('#today-button').click()
+    expect(el.value).to.equal('2000-01-01')
+  })
+})
