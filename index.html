@@ -51,7 +51,7 @@
       <li>Adding <code>data-year-text</code> allows you to change the label above the year input.</li>
       <li>Adding <code>data-value-missing</code> allows you to customise the validation message if <code>required</code> is set.</li>
       <li>Adding <code>data-error-text</code> allows you to use external validation to set the field as invalid.</li>
-      <li>Adding <code>data-today-button-text</code> shows a button that fills the inputs with today's date. The attribute value is used as the button label; if empty, defaults to <em>Use today's date</em>. The button is disabled when <code>disabled</code> or <code>readonly</code> is set.</li>
+      <li>Adding <code>data-today-button-text</code> shows a GOV.UK-styled button that fills the inputs with today's date. The attribute value sets the button label; if empty, defaults to <em>Use today's date</em>. The button is disabled when <code>disabled</code> or <code>readonly</code> is set. When <code>data-label</code> is also present, the button's <code>aria-label</code> combines both values (e.g. <em>"Use today's date, Start date"</em>) so screen reader users can distinguish it when multiple date inputs appear on the same page.</li>
     </ul>
     <h2>Examples</h2>
     <h3>Plain input</h3>
@@ -255,9 +255,10 @@
         <label for="example_019_field">Example 019 (<code>data-today-button-text</code>)</label>
         <wc-date-input name="example_019_field"
                        id="example_019_field"
+                       data-label="Example date"
                        data-today-button-text="Use today's date"></wc-date-input>
         <br/>
-        <p>Adding <code>data-today-button-text</code> shows a button that fills the inputs with today's date. The attribute value sets the button label; if empty, it defaults to <em>Use today's date</em>.</p>
+        <p>Adding <code>data-today-button-text</code> shows a GOV.UK-styled button that fills the inputs with today's date. The attribute value sets the button label; if empty, it defaults to <em>Use today's date</em>. Because <code>data-label</code> is also set, the button's <code>aria-label</code> is <em>"Use today's date, Example date"</em>, uniquely identifying it to screen reader users.</p>
       </div>
       <hr>
       <div>
@@ -278,6 +279,20 @@
                        readonly></wc-date-input>
         <br/>
         <p>The today button is disabled when the component has <code>readonly</code> set.</p>
+      </div>
+      <hr>
+      <div>
+        <label for="example_022_field_a">Example 022 (<code>data-today-button-text</code> with <code>data-label</code> — accessible <code>aria-label</code>)</label>
+        <wc-date-input name="example_022_field_a"
+                       id="example_022_field_a"
+                       data-label="Start date"
+                       data-today-button-text="Use today's date"></wc-date-input>
+        <wc-date-input name="example_022_field_b"
+                       id="example_022_field_b"
+                       data-label="End date"
+                       data-today-button-text="Use today's date"></wc-date-input>
+        <br/>
+        <p>When multiple date inputs appear on the same page, setting <code>data-label</code> alongside <code>data-today-button-text</code> causes each button's <code>aria-label</code> to combine both values — e.g. <em>"Use today's date, Start date"</em> and <em>"Use today's date, End date"</em> — so screen reader users can distinguish them.</p>
       </div>
       <hr>
       <button type="submit">Submit</button>

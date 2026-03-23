@@ -28,7 +28,7 @@ If you're anything like me, you'll find scrolling through months looking for you
 * Adding `data-error-text` allows you to use external validation to set the field as invalid.
 * Adding `data-hint-text` overrides the default screen-reader hint (*"Focus moves automatically as you complete each field."*) — useful for internationalisation.
 * Adding `data-day-autocomplete`, `data-month-autocomplete`, and `data-year-autocomplete` sets the `autocomplete` attribute on each sub-field (default `off`). For a date-of-birth field use `bday-day`, `bday-month`, and `bday-year` respectively.
-* Adding `data-today-button-text` shows a GOV.UK-styled button that fills the inputs with today's date. The attribute value is used as the button label; if empty, it defaults to *"Use today's date"*. The button is automatically disabled when `disabled` or `readonly` is set.
+* Adding `data-today-button-text` shows a GOV.UK-styled button that fills the inputs with today's date. The attribute value is used as the button label; if empty, it defaults to *"Use today's date"*. The button is automatically disabled when `disabled` or `readonly` is set. When `data-label` is also set, the button's `aria-label` combines both values (e.g. *"Use today's date, Start date"*) so screen reader users can distinguish it when multiple date inputs appear on the same page.
 
 ```html
 <wc-date-input

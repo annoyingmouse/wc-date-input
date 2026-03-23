@@ -410,6 +410,16 @@ class WCDateInput extends HTMLElement {
     `
   }
 
+  updateTodayButtonAriaLabel() {
+    const buttonText = this.dataset.todayButtonText || 'Use today\'s date'
+    const legendText = this.dataset.label
+    if (legendText) {
+      this.todayButton.setAttribute('aria-label', `${buttonText}, ${legendText}`)
+    } else {
+      this.todayButton.removeAttribute('aria-label')
+    }
+  }
+
   attributeChangedCallback(name, oldValue, newValue) {
     switch (name) {
       case 'required':
@@ -496,6 +506,7 @@ class WCDateInput extends HTMLElement {
       case 'data-label':
         if(oldValue !== newValue) {
           this.legendElement.textContent = newValue ?? ''
+          this.updateTodayButtonAriaLabel()
         }
         break
       case 'data-day-text':
@@ -557,6 +568,7 @@ class WCDateInput extends HTMLElement {
           } else {
             this.todayButton.classList.remove('visible')
           }
+          this.updateTodayButtonAriaLabel()
         }
     }
   }

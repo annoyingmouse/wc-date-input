@@ -543,10 +543,52 @@ describe('data-today-button-text — disabled and readonly', () => {
     expect(el.shadow.querySelector('#today-button').disabled).to.be.false
   })
 
+  it('button is enabled when both disabled and readonly are absent', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date"></wc-date-input>`)
+    expect(el.shadow.querySelector('#today-button').disabled).to.be.false
+  })
+
   it('button does not update value when disabled', async () => {
     const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date" disabled value="2000-01-01"></wc-date-input>`)
     // disabled buttons do not fire click events
     el.shadow.querySelector('#today-button').click()
     expect(el.value).to.equal('2000-01-01')
+  })
+})
+
+// ─── data-today-button-text — aria-label ─────────────────────────────────────
+
+describe('data-today-button-text — aria-label', () => {
+  it('has no aria-label when data-label is absent', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date"></wc-date-input>`)
+    expect(el.shadow.querySelector('#today-button').hasAttribute('aria-label')).to.be.false
+  })
+
+  it('sets aria-label combining button text and legend when data-label is present', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date" data-label="Start date"></wc-date-input>`)
+    expect(el.shadow.querySelector('#today-button').getAttribute('aria-label')).to.equal("Use today's date, Start date")
+  })
+
+  it('uses the default button text in aria-label when attribute value is empty', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="" data-label="Start date"></wc-date-input>`)
+    expect(el.shadow.querySelector('#today-button').getAttribute('aria-label')).to.equal("Use today's date, Start date")
+  })
+
+  it('updates aria-label when data-label changes', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date" data-label="Start date"></wc-date-input>`)
+    el.setAttribute('data-label', 'End date')
+    expect(el.shadow.querySelector('#today-button').getAttribute('aria-label')).to.equal("Use today's date, End date")
+  })
+
+  it('removes aria-label when data-label is removed', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date" data-label="Start date"></wc-date-input>`)
+    el.removeAttribute('data-label')
+    expect(el.shadow.querySelector('#today-button').hasAttribute('aria-label')).to.be.false
+  })
+
+  it('updates aria-label when data-today-button-text changes', async () => {
+    const el = await fixture(html`<wc-date-input data-today-button-text="Use today's date" data-label="Start date"></wc-date-input>`)
+    el.setAttribute('data-today-button-text', 'Set to today')
+    expect(el.shadow.querySelector('#today-button').getAttribute('aria-label')).to.equal('Set to today, Start date')
   })
 })
